@@ -1,0 +1,555 @@
+#include <Arduino.h>
+
+#include <NtpClientLib.h>
+
+#include "timer.h"
+
+#include "device.h"
+
+#include "mqtt.h"
+
+#include "util.h"
+
+#include "temp.h"
+
+#include "udp.h"
+
+#include "led.h"
+
+#include <ESP8266Ping.h>
+
+ITZoneTimer timer1;
+
+void timer_func_resetRelayIfNoInternetConnection(byte device_id) {
+  //Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection executed [%d] \n",device_id);
+
+  IPAddress ip(8, 8, 8, 8); // The remote ip to ping
+  //IPAddress ip (2, 2, 2, 2); // The remote ip to ping
+  bool ret = Ping.ping(ip);
+  //Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection executed ret [%d] \n",ret);
+
+  if (ret == false && conf.relays[device_id].relay_state == 1) {
+    //Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection Reseting [%d] \n",ret);
+    setRelayState(0, 0);
+    delay(3000);
+    setRelayState(0, 1);
+  }
+  /*
+  else if (ret==false && conf.relays[index].relay_state==0)
+  {
+  Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection Reseting [%d] \n",ret);
+  setRelayState(0, 1);
+  setRelayState(0, 0);
+  } 
+  */
+}
+
+void timer_func_updateTemperature(byte device_id) {
+  //Serial.printf("TIMER timer_func_updateTemperature executed [%d] \n",device_id);
+  MQTTLogMessage(String("TIMER timer_func_updateTemperature executed device_id =") + device_id);
+  //processTemp();
+}
+
+void timer_func_generateAppToken(byte device_id) {
+  //Serial.printf("TIMER timer_func_generateAppToken executed [%d] \n",device_id);
+  MQTTLogMessage(String("TIMER timer_func_generateAppToken executed device_id =") + device_id);
+  generateToken();
+  MQTTLogMessage(String("TIMER timer_func_generateAppToken executed END "));
+
+}
+
+void timer_func_sendUDPpacket(byte device_id) {
+  MQTTLogMessage(String("TIMER timer_func_sendUDPpacket executed device_id =") + device_id);
+  //Serial.printf("TIMER timer_func_sendUDPpacket executed [%d] \n",device_id);
+  sendUDPPing();
+  MQTTLogMessage(String("TIMER timer_func_sendUDPpacket executed END"));
+}
+
+void timer_func_processRelayLed(byte device_id) {
+  //Serial.printf("TIMER timer_func_processRelayLed executed [%d] \n",device_id);
+  MQTTLogMessage(String("TIMER processRelayLed executed device_id =") + device_id);
+  processRelayLed(device_id);
+  MQTTLogMessage(String("TIMER processRelayLed executed END"));
+}
+
+//Firmware Update Check
+void timer_func_firmware_update_check(byte device_id) {
+  addAppLogMessage(String("TIMER Firmware Update Check executed [") + device_id + "]");
+
+  //Serial.printf("TIMER Firmware Update Check executed [%d] \n",device_id);
+  MQTTLogMessage(String("TIMER Firmware Update Check executed"));
+  updateFirmwareFromNet();
+}
+
+void timer_func_relayOn(byte device_id) {
+  MQTTLogMessage(String("TIMER relayOn executed device_id =") + device_id);
+  addAppLogMessage(String("TIMER relayOn executed [") + device_id + "]");
+  //Serial.printf("TIMER relayOn executed [%d] \n",device_id);
+  //conf.relays[device_id].relay_state=1;
+
+  setRelayStatePermanently(device_id, 1);
+  //Serial.printf("TIMER relayOn executed END\n");
+  MQTTLogMessage(String("TIMER relayOn executed END"));
+}
+
+void timer_func_relayOff(byte device_id) {
+  MQTTLogMessage(String("TIMER relayOff executed device_id =") + device_id);
+  addAppLogMessage(String("TIMER relayOff executed [") + device_id + "]");
+  //Serial.printf("TIMER relayOff executed [%d] \n",device_id);
+  //conf.relays[device_id].relay_state=0;
+  setRelayStatePermanently(device_id, 0);
+  //Serial.printf("TIMER relayOff executed END\n");
+  MQTTLogMessage(String("TIMER relayOff executed END"));
+}
+
+void timer_func_RGBLedOn(byte device_id) {
+  MQTTLogMessage(String("TIMER RGBLedOn executed device_id =") + device_id);
+  addAppLogMessage(String("TIMER RGBLedOn executed [") + device_id + "]");
+
+  RGBLedSetStatePermanently(1);
+
+}
+
+void timer_func_RGBLedOff(byte device_id) {
+  MQTTLogMessage(String("TIMER RGBLedOff executed device_id =") + device_id);
+  addAppLogMessage(String("TIMER RGBLedOff executed [") + device_id + "]");
+
+  RGBLedSetStatePermanently(0);
+
+}
+
+void timer_func_getSunriseSunsetTime(byte device_id) {
+  //if (runtime.curr_hour<4) return;
+
+  //Serial.printf("TIMER getSunsetTime executed [%d] \n",device_id);
+  MQTTLogMessage(String("TIMER getSunsetTime executed device_id =") + device_id);
+  getSunriseSunset(conf.sunsetAPIKey, conf.sunsetAPICity);
+  MQTTLogMessage(String("TIMER getSunsetTime executed END"));
+}
+
+void timer_func_relayOnAtSunset(byte device_id) {
+  if (runtime.curr_hour == runtime.sunset_hour && runtime.curr_min == runtime.sunset_minute) {
+    //  MQTTLogMessage(String ("TIMER relayOnAtSunset This is sunset device_id =")+device_id);
+    //conf.relays[device_id].relay_state=1;
+    setRelayStatePermanently(device_id, 1);
+  }
+}
+
+void timer_func_relayOffAtSunrise(byte device_id) {
+  if (runtime.curr_hour == runtime.sunrise_hour && runtime.curr_min == runtime.sunrise_minute) {
+    setRelayStatePermanently(device_id, 0);
+  }
+}
+
+void timer_func_RGBLedOnAtSunset(byte device_id) {
+  if (runtime.curr_hour == runtime.sunset_hour && runtime.curr_min == runtime.sunset_minute) RGBLedSetStatePermanently(1);
+
+}
+
+void timer_func_RGBLedOffAtSunrise(byte device_id) {
+  if (runtime.curr_hour == runtime.sunrise_hour && runtime.curr_min == runtime.sunrise_minute) RGBLedSetStatePermanently(0);
+
+}
+
+ITZoneTimer::ITZoneTimer() {}
+
+void ITZoneTimer::begin() {
+  //Serial.printf("ITZoneTimer::begin \n");
+}
+
+byte ITZoneTimer::getCurrentSec() {
+  byte ret = -1;
+  String str = NTP.getTimeDateString();
+  //Serial.printf("getCurrentSec [%s]\n",str.c_str());
+
+  if (str.equals("Time not set")) return -1;
+
+  str = str.substring(6, 8);
+  //Serial.printf("getCurrentSec [%s]\n",str.c_str());
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentSec ret [%d]\n",ret);
+
+  return ret;
+}
+
+byte ITZoneTimer::getCurrentMin() {
+  byte ret = -1;
+  String str = NTP.getTimeDateString();
+
+  if (str.equals("Time not set")) return -1;
+
+  str = str.substring(3, 5);
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentMin [%s]\n",str.c_str());
+
+  return ret;
+}
+
+byte ITZoneTimer::getCurrentHour() {
+  byte ret = -1;
+  String str = NTP.getTimeDateString();
+
+  if (str.equals("Time not set")) return -1;
+
+  str = str.substring(0, 2);
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentHour [%s]\n",str.c_str());
+
+  return ret;
+}
+
+byte ITZoneTimer::getCurrentDay() {
+  byte ret = -1;
+  String str = NTP.getDateStr();
+
+  if (str.equals("Time not set")) return -1;
+  //Serial.printf("getCurrentDay [%s]\n",str.c_str());
+
+  str = str.substring(0, 2);
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentDay [%s]\n",str.c_str());
+
+  return ret;
+}
+
+byte ITZoneTimer::getCurrentMonth() {
+  byte ret = -1;
+  String str = NTP.getDateStr();
+
+  if (str.equals("Time not set")) return -1;
+  //Serial.printf("getCurrentMonth [%s]\n",str.c_str());
+
+  str = str.substring(3, 5);
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentMonth [%s]\n",str.c_str());
+
+  return ret;
+}
+
+int ITZoneTimer::getCurrentYear() {
+  int ret = -1;
+  String str = NTP.getDateStr();
+
+  if (str.equals("Time not set")) return -1;
+  //Serial.printf("getCurrentYear [%s]\n",str.c_str());
+
+  str = str.substring(6, 10);
+  //Serial.printf("getCurrentYear [%s]\n",str.c_str());
+
+  ret = str.toInt();
+  //Serial.printf("getCurrentYear ret [%d]\n",ret);
+
+  return ret;
+}
+
+bool ITZoneTimer::isElementInList(String element, String list) {
+  bool ret = false;
+
+  //Serial.printf("isElementInList element [%s] list = [%s] \n",element.c_str(),list.c_str());
+
+  char str[list.length()];
+
+  strcpy(str, list.c_str());
+
+  char * pch = strtok(str, " ,.-");
+  while (pch != NULL) {
+
+    int cmp = strcmp(pch, element.c_str());
+    //    Serial.printf ("%s %d\n",pch,cmp);
+
+    // lesli jest na liście
+    if (strcmp(pch, element.c_str()) == 0) {
+      ret = true;
+      break;
+    }
+
+    pch = strtok(NULL, " ,.-");
+  }
+
+  //  Serial.printf("isElementInList ret [%d]\n",ret);
+
+  return ret;
+}
+
+bool ITZoneTimer::isEven(String instr, byte in_value) {
+  bool ret = false;
+  //  Serial.printf("isEven [%s] [%d]\n",instr.c_str(), in_value);
+
+  // jesli to nie jest even wychodzi
+  if (!instr.equals("Even")) return false;
+
+  if (in_value % 2 == 0) ret = true;
+
+  // Serial.printf("isEven ret [%d]\n",ret);
+
+  return ret;
+}
+
+bool ITZoneTimer::isOdd(String instr, byte in_value) {
+  bool ret = false;
+
+  //  Serial.printf("isOdd [%s] [%d]\n",instr.c_str(), in_value);
+
+  // jesli to nie jest Odd wychodzi
+  if (!instr.equals("Odd")) return false;
+
+  if (in_value & 1) ret = true;
+
+  // Serial.printf("isOdd ret [%d]\n",ret);
+
+  return ret;
+}
+
+bool ITZoneTimer::isRange(String instr, byte in_value) {
+  bool ret = false;
+
+  //Serial.printf("isRange instr [%s] in_value = [%d] \n",instr.c_str(),in_value);
+  //Serial.printf("XXX [%s] \n",instr.substring(0,6).c_str());
+
+  // jesli to nie jest Range wychodzi
+  if (!instr.substring(0, 6).equals("Range ")) return false;
+
+  String msg = instr.substring(6, instr.length());
+
+  //Serial.printf("isRange msg [%s] \n",msg.c_str());
+  byte pos = msg.indexOf("-");
+
+  //Serial.printf("pos [%d] \n",pos);
+
+  //Serial.printf("isRange instr [%s] \n",instr.substring(2,instr.length()).c_str());
+
+  int from_value = msg.substring(0, pos).toInt();
+  int to_value = msg.substring(pos + 1, msg.length()).toInt();
+  //Serial.printf("isRange from_value [%d]  to_value [%d] \n",from_value,to_value);
+
+  if (in_value >= from_value && in_value <= to_value) ret = true;
+
+  // Serial.printf("isRange ret [%d]\n",ret);
+
+  return ret;
+
+}
+
+bool ITZoneTimer::isEvery(String instr, byte in_value) {
+  bool ret = false;
+
+  //Serial.printf("isEvery instr [%s] in_value = [%d] \n",instr.c_str(),in_value);
+  //Serial.printf("XXX [%s] \n",instr.substring(0,6).c_str());
+
+  // jesli to nie jest every wychodzi
+  if (!instr.substring(0, 6).equals("Every ")) return false;
+
+  //Serial.printf("isEvery instr [%s] \n",instr.substring(2,instr.length()).c_str());
+
+  int every_value = instr.substring(6, instr.length()).toInt();
+  //Serial.printf("isEvery every_value [%d] \n",every_value);
+
+  byte modulo = in_value % every_value;
+  //Serial.printf("modulo [%d] \n",modulo);
+
+  // jeśli mieści się w every
+  if (modulo == 0) ret = true;
+
+  //  Serial.printf("isEvery ret [%d]\n",ret);
+
+  return ret;
+}
+
+void ITZoneTimer::processCronObject(CronObject cronObject) {
+
+  /*
+  byte curr_hour= getCurrentHour();
+  byte curr_min= getCurrentMin();
+  byte curr_day=getCurrentDay();
+  byte curr_month=getCurrentMonth();
+  */
+
+  byte curr_hour = runtime.curr_hour;
+  byte curr_min = runtime.curr_min;
+  byte curr_day = runtime.curr_day;
+  byte curr_month = runtime.curr_month;
+
+  //if (curr_min%conf.logTimerMessagesEveryXMinutes==0) MQTTLogMessage(String ("processCronObjects Alert datetime hour =")+cronObject.hour.c_str()+" min= "+cronObject.minute.c_str()+" day= "+cronObject.day.c_str()+" month= "+cronObject.month.c_str()+" ( func "+cronObject.function_name+")");
+  //if (curr_min%conf.logTimerMessagesEveryXMinutes==0) Serial.printf("processCronObjects Alert datetime hour =%s min = %s day %s  month %s weekday = %s \n",cronObject.hour.c_str(),cronObject.minute.c_str(),cronObject.day.c_str(),cronObject.month.c_str(),cronObject.weekday.c_str());
+
+  //Serial.printf("curr_day= %d \n",curr_day);
+  //Serial.printf("curr_month= %d \n",curr_month);
+
+  //if (curr_min%conf.logTimerMessagesEveryXMinutes==0) Serial.printf("CURR datetime hour = %d min = %d day %d  month %d weekday = %d \n",curr_hour,curr_min,curr_day,curr_month,last_red_wday);
+  if (
+
+    (cronObject.minute.equals("*") || isElementInList(String(curr_min), cronObject.minute) || isEvery(cronObject.minute, curr_min) || isRange(cronObject.minute, curr_min) || isEven(cronObject.minute, curr_min) || isOdd(cronObject.minute, curr_min)) &&
+    (cronObject.hour.equals("*") || isElementInList(String(curr_hour), cronObject.hour) || isEvery(cronObject.hour, curr_hour) || isRange(cronObject.hour, curr_hour)) &&
+    (cronObject.day.equals("*") || isElementInList(String(curr_day), cronObject.day) || isEvery(cronObject.day, curr_day) || isRange(cronObject.day, curr_day)) &&
+    (cronObject.month.equals("*") || isElementInList(String(curr_month), cronObject.month) || isEvery(cronObject.month, curr_month) || isRange(cronObject.month, curr_month)) &&
+    (cronObject.weekday.equals("*") || isElementInList(String(last_red_wday), cronObject.weekday))
+
+  )
+    //Serial.printf("EXECUTING\n",curr_month);
+
+    cronObject.fn_Callback(cronObject.device_id);
+
+}
+
+uint8_t ITZoneTimer::getDayOfWeek() {
+  //Got NTP time: 11:17:30 20/02/2017
+  //Serial.printf("getTimeDateString()1 = %s\n",NTP.getTimeDateString().c_str());
+
+  //int year = getCurrentYear();
+  //int month  = getCurrentMonth();
+  //int day =  getCurrentDay();
+  //int hour =  getCurrentHour();
+  //int min =  getCurrentMin();
+
+  time_t nowTime = NTP.getTime();
+  //Serial.printf("getTimeDateString()2 = %s\n",NTP.getTimeDateString().c_str());
+
+  uint32_t time = (uint32_t) nowTime;
+  time /= 60; // now it is minutes
+  time /= 60; // now it is hours
+  time /= 24; // now it is days
+
+  //Serial.printf("getTimeDateString()3 = %s\n",NTP.getTimeDateString().c_str());
+  //uint8_t wday= ((time + 4) % 7) + 1; // Sunday is day 1 
+  uint8_t wday = ((time + 4) % 7); // Monday is day 1 
+
+  //Serial.printf("getTimeDateString()4 = %s\n",NTP.getTimeDateString().c_str());
+
+  return wday;
+
+}
+
+void ITZoneTimer::process() {
+  //delay (1000);
+
+  //Serial.printf("process\n");
+
+  byte curr_sec = getCurrentSec();
+  //if (curr_sec==0 ||curr_sec==255 ) return;
+
+  byte curr_hour = getCurrentHour();
+  byte curr_min = getCurrentMin();
+  byte curr_day = getCurrentDay();
+  byte curr_month = getCurrentMonth();
+
+  runtime.curr_hour = curr_hour;
+  runtime.curr_min = curr_min;
+  runtime.curr_day = curr_day;
+  runtime.curr_month = curr_month;
+
+  //Serial.printf("TMP last_red_hour = %d last_red_min = %d hour = %d min = %d\n",last_red_hour,last_red_min,curr_hour,curr_min);
+
+  if (curr_hour == last_red_hour && curr_min == last_red_min) return;
+
+  //  byte last_red_hour=-1;
+  //  byte last_red_min=-1;
+
+  byte modulo = curr_min % 1;
+
+  //Serial.printf("TMP modulo = %d\n",modulo);
+
+  if (modulo != 0) return;
+
+  //Serial.printf("getTimeDateString() = %s\n",NTP.getTimeDateString().c_str());
+
+  //if (curr_min%conf.logTimerMessagesEveryXMinutes ==0) MQTTLogMessage("hour = %d min = %d sec = %d\n",curr_hour,curr_min,curr_sec);
+
+  //Serial.printf("year = [%d]\n",getCurrentYear());
+
+  if ((curr_hour == 0 && curr_min == 0) || last_red_wday == 255) {
+
+    uint8_t wday = getDayOfWeek();
+
+    last_red_wday = wday;
+  }
+
+  //loguj do mqtt tylko co 5 minut 
+  if (curr_min % conf.logTimerMessagesEveryXMinutes == 0) MQTTLogMessage(String("process Timer hour =") + curr_hour + " min= " + curr_min + " day= " + curr_day + " month= " + curr_month + " dayofweek= " + last_red_wday);
+
+  //if (curr_min%conf.logTimerMessagesEveryXMinutes ==0) Serial.printf("day of week = %d \n",last_red_wday);
+
+  // tm.Wday = ((time + 4) % 7) + 1; // Sunday is day 1 
+
+  int listSize = cronObjects.size();
+  for (int i = 0; i < listSize; i++) processCronObject(cronObjects.get(i));
+
+  //if (curr_hour==timerObjects[i].runtime_hour && curr_min==timerObjects[i].runtime_min)        timerObjects[i].fn_Callback(timerObjects[i].device_id);
+
+  last_red_hour = curr_hour;
+  last_red_min = curr_min;
+
+}
+
+void ITZoneTimer::addTask(String type, byte device_id, String function_name, String minute, String hour, String day, String month, String weekday)
+
+//void ITZoneTimer::setRunTime(byte index, byte hour, byte min,THandlerFunction_Callback fn)
+{
+
+  //String hourstr=time.substring(0,2);
+  //String minstr=time.substring(3,5);
+
+  //byte hour=hourstr.toInt();
+  //byte min=minstr.toInt();
+
+  //Serial.printf("TIMER SET RUNTIME device %d function %s hour %s min %s day %s month %s weekday %s\n", device_id , function_name.c_str(), hour.c_str(), minute.c_str(), day.c_str(), month.c_str(), weekday.c_str() );
+
+  //MQTTLogMessage("TIMER set func "+function_name+" hour "+hour+" minute "+minute);
+
+  CronObject cronObject;
+
+  cronObject.type = type;
+
+  cronObject.minute = minute;
+  cronObject.minute_logical = minute;
+  cronObject.hour = hour;
+  cronObject.hour_logical = hour;
+  cronObject.day = day;
+  cronObject.day_logical = day;
+  cronObject.month = month;
+  cronObject.month_logical = month;
+  cronObject.weekday = weekday;
+  cronObject.weekday_logical = weekday;
+
+  if (minute.startsWith("Random")) cronObject.minute = getRandomNumbers(minute);
+  if (hour.startsWith("Random")) cronObject.hour = getRandomNumbers(hour);
+  if (day.startsWith("Random")) cronObject.day = getRandomNumbers(day);
+  if (month.startsWith("Random")) cronObject.month = getRandomNumbers(month);
+  if (weekday.startsWith("Random")) cronObject.weekday = getRandomNumbers(weekday);
+
+  cronObject.function_name = function_name;
+  cronObject.device_id = device_id;
+
+  if (cronObject.function_name.equals("Relay on")) cronObject.fn_Callback = timer_func_relayOn;
+  else if (cronObject.function_name.equals("Relay off")) cronObject.fn_Callback = timer_func_relayOff;
+
+  else if (cronObject.function_name.equals("RGBLed on")) cronObject.fn_Callback = timer_func_RGBLedOn;
+  else if (cronObject.function_name.equals("RGBLed off")) cronObject.fn_Callback = timer_func_RGBLedOff;
+  else if (cronObject.function_name.equals("RGBLed off at sunrise")) cronObject.fn_Callback = timer_func_RGBLedOffAtSunrise;
+  else if (cronObject.function_name.equals("RGBLed on at sunset")) cronObject.fn_Callback = timer_func_RGBLedOnAtSunset;
+
+  else if (cronObject.function_name.equals("Relay off at sunrise")) cronObject.fn_Callback = timer_func_relayOffAtSunrise;
+  else if (cronObject.function_name.equals("Relay on at sunset")) cronObject.fn_Callback = timer_func_relayOnAtSunset;
+  else if (cronObject.function_name.equals("Get sunrise and sunset time")) cronObject.fn_Callback = timer_func_getSunriseSunsetTime;
+  else if (cronObject.function_name.equals("Send PING to cluster")) cronObject.fn_Callback = timer_func_sendUDPpacket;
+  else if (cronObject.function_name.equals("Generate App token")) cronObject.fn_Callback = timer_func_generateAppToken;
+  else if (cronObject.function_name.equals("Reset relay if no internet connection")) cronObject.fn_Callback = timer_func_resetRelayIfNoInternetConnection;
+  else if (cronObject.function_name.equals("Firmware update check")) cronObject.fn_Callback = timer_func_firmware_update_check;
+  else if (cronObject.function_name.equals("Process relay led")) cronObject.fn_Callback = timer_func_processRelayLed;
+  else if (cronObject.function_name.equals("Update temperature")) cronObject.fn_Callback = timer_func_updateTemperature;
+
+  cronObjects.add(cronObject);
+
+}
+
+/*
+void ITZoneTimer::setcallbackFunction(THandlerFunction_Callback fn)
+{
+
+}
+
+*/
