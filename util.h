@@ -184,7 +184,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 13.0;
+float firmware_version = 13.03;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
@@ -203,7 +203,7 @@ int WIFI_STA_RECCONECT_COUNT=5;
 //int WIFI_STA_RECCONECT_DELAY=2000;
 //co tydzień
 //unsigned long firmware_update_mins=10080;
-String firmware_url ;
+char firmware_url[200] ;
 
 unsigned int ntpUDPLocalPort = 2390;      // local port to listen for UDP packets
 String ntpserver;

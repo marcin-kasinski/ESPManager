@@ -358,6 +358,7 @@ void handleJSONListSheduledTasks() {
 
     content = content + "{" + "\"device_id\":\"" + cronObjects.device_id + "\"," +
       "\"minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
+//      "\"type\":\"" + cronObjects.type +       "\", minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
       "\"hour\":\"" + cronObjects.hour + "\"" + "," + "\"hour_logical\":\"" + cronObjects.hour_logical + "\"" + "," +
       "\"day\":\"" + cronObjects.day + "\"" + "," + "\"day_logical\":\"" + cronObjects.day_logical + "\"" + "," +
       "\"month\":\"" + cronObjects.month + "\"" + "," + "\"month_logical\":\"" + cronObjects.month_logical + "\"" + "," +
@@ -501,6 +502,9 @@ void handleJSONRuntimeInfo() {
     //    content2=content2+"{"+"\"n\":\"dns4\","+"\"v\":\""+dns4+"\""+",\"h\":\"0.0.0.0\"},\n";
 
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay_state0\"," + "\"v\":\"" + conf.relays[0].relay_state + "\"" + ",\"h\":\"\"},\n";
+
+//    Serial.printf("\n\n----------------------- Przeczytałem relay state 2 %d na indeksie %d \n\n",conf.relays[0].relay_state , 0);
+
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay0.internalName\"," + "\"v\":\"" + conf.relays[0].internalName + "\"" + ",\"h\":\"_\"},\n";
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay0.relay_conn_type\"," + "\"v\":\"" + conf.relays[0].relay_conn_type + "\"" + ",\"h\":\"\"},\n";
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay0.relay_switch_pin\"," + "\"v\":\"" + conf.relays[0].relay_switch_pin + "\"" + ",\"h\":\"\"},\n";

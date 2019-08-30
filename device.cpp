@@ -305,5 +305,6 @@ void initDevices() {
   initRelay(1);
   initRelaySwitch(0);
   initRelaySwitch(1);
+  MQTTLogMessage(String("initDevice END"));
 
 }

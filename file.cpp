@@ -240,7 +240,7 @@ bool saveFile(String path, String indata) {
   //String indatapart=indata.substring(0,300) ;
 
   //    MQTTLogMessage(String("saveFile : ")+path+     String(", length : ")+indata.length()+   String(" , leading: ")+indata.substring(0,300));
-  MQTTLogMessage(String("saveFile : ") + path + String(", length : ") + indata.length() + String(" , data: ") + indata);
+  //MQTTLogMessage(String("saveFile : ") + path + String(", length : ") + indata.length() + String(" , data: ") + indata);
   //    addAppLogMessage(String("saveFile : ")+indata );
 
   File f = SPIFFS.open(path.c_str(), "w");

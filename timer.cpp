@@ -29,7 +29,7 @@ void timer_func_resetRelayIfNoInternetConnection(byte device_id) {
   //Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection executed ret [%d] \n",ret);
 
   if (ret == false && conf.relays[device_id].relay_state == 1) {
-    //Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection Reseting [%d] \n",ret);
+    Serial.printf("TIMER timer_func_resetRelayIfNoInternetConnection Reseting [%d] \n",ret);
     setRelayState(0, 0);
     delay(3000);
     setRelayState(0, 1);
@@ -136,6 +136,10 @@ void timer_func_relayOnAtSunset(byte device_id) {
 }
 
 void timer_func_relayOffAtSunrise(byte device_id) {
+
+  //Serial.printf("timer_func_relayOffAtSunrise runtime.curr_hour [%d] runtime.sunrise_hour [%d] runtime.curr_min [%d] runtime.sunrise_minute [%d] \n", runtime.curr_hour ,runtime.sunrise_hour,runtime.curr_min ,runtime.sunrise_minute);
+
+  
   if (runtime.curr_hour == runtime.sunrise_hour && runtime.curr_min == runtime.sunrise_minute) {
     setRelayStatePermanently(device_id, 0);
   }
@@ -162,7 +166,7 @@ byte ITZoneTimer::getCurrentSec() {
   String str = NTP.getTimeDateString();
   //Serial.printf("getCurrentSec [%s]\n",str.c_str());
 
-  if (str.equals("Time not set")) return -1;
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
 
   str = str.substring(6, 8);
   //Serial.printf("getCurrentSec [%s]\n",str.c_str());
@@ -177,7 +181,7 @@ byte ITZoneTimer::getCurrentMin() {
   byte ret = -1;
   String str = NTP.getTimeDateString();
 
-  if (str.equals("Time not set")) return -1;
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
 
   str = str.substring(3, 5);
 
@@ -191,7 +195,7 @@ byte ITZoneTimer::getCurrentHour() {
   byte ret = -1;
   String str = NTP.getTimeDateString();
 
-  if (str.equals("Time not set")) return -1;
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
 
   str = str.substring(0, 2);
 
@@ -205,7 +209,7 @@ byte ITZoneTimer::getCurrentDay() {
   byte ret = -1;
   String str = NTP.getDateStr();
 
-  if (str.equals("Time not set")) return -1;
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
   //Serial.printf("getCurrentDay [%s]\n",str.c_str());
 
   str = str.substring(0, 2);
@@ -219,10 +223,10 @@ byte ITZoneTimer::getCurrentDay() {
 byte ITZoneTimer::getCurrentMonth() {
   byte ret = -1;
   String str = NTP.getDateStr();
+//Serial.printf("getCurrentMonth [%s]\n",str.c_str());
 
-  if (str.equals("Time not set")) return -1;
-  //Serial.printf("getCurrentMonth [%s]\n",str.c_str());
-
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
+  
   str = str.substring(3, 5);
 
   ret = str.toInt();
@@ -235,7 +239,7 @@ int ITZoneTimer::getCurrentYear() {
   int ret = -1;
   String str = NTP.getDateStr();
 
-  if (str.equals("Time not set")) return -1;
+  if (str.equals("Time not set") || str.endsWith("01/01/1970")) return -1;
   //Serial.printf("getCurrentYear [%s]\n",str.c_str());
 
   str = str.substring(6, 10);
@@ -369,8 +373,10 @@ void ITZoneTimer::processCronObject(CronObject cronObject) {
   byte curr_month=getCurrentMonth();
   */
 
-  byte curr_hour = runtime.curr_hour;
   byte curr_min = runtime.curr_min;
+
+  byte curr_hour = runtime.curr_hour;
+
   byte curr_day = runtime.curr_day;
   byte curr_month = runtime.curr_month;
 
@@ -390,10 +396,12 @@ void ITZoneTimer::processCronObject(CronObject cronObject) {
     (cronObject.weekday.equals("*") || isElementInList(String(last_red_wday), cronObject.weekday))
 
   )
-    //Serial.printf("EXECUTING\n",curr_month);
+  {
+    //Serial.printf("EXECUTING TIMER START [%s] [%s] [%s] [%d]\n",cronObject.type.c_str(), cronObject.function_name.c_str(),cronObject.minute.c_str(), curr_min);
 
     cronObject.fn_Callback(cronObject.device_id);
-
+    //Serial.printf("EXECUTING TIMER END [%s] [%s] [%s] [%d]\n",cronObject.type.c_str(), cronObject.function_name.c_str(),cronObject.minute.c_str(), curr_min);
+  }
 }
 
 uint8_t ITZoneTimer::getDayOfWeek() {
@@ -426,14 +434,21 @@ uint8_t ITZoneTimer::getDayOfWeek() {
 
 void ITZoneTimer::process() {
   //delay (1000);
-
-  //Serial.printf("process\n");
+//XXXXXXXXXXXXXX
+  //Serial.printf("process START\n");
 
   byte curr_sec = getCurrentSec();
+
+  if (curr_sec ==-1) return;
   //if (curr_sec==0 ||curr_sec==255 ) return;
 
-  byte curr_hour = getCurrentHour();
   byte curr_min = getCurrentMin();
+  if (curr_min == last_red_min) return;
+
+  byte curr_hour = getCurrentHour();
+
+//  if (curr_hour == last_red_hour && curr_min == last_red_min) return;
+
   byte curr_day = getCurrentDay();
   byte curr_month = getCurrentMonth();
 
@@ -442,9 +457,10 @@ void ITZoneTimer::process() {
   runtime.curr_day = curr_day;
   runtime.curr_month = curr_month;
 
-  //Serial.printf("TMP last_red_hour = %d last_red_min = %d hour = %d min = %d\n",last_red_hour,last_red_min,curr_hour,curr_min);
+  //Serial.printf("getTimeDateString() = %s\n",NTP.getTimeDateString().c_str());
 
-  if (curr_hour == last_red_hour && curr_min == last_red_min) return;
+  //Serial.printf("runtime.curr_hour  = %d runtime.curr_min = %d \n",runtime.curr_hour ,runtime.curr_min);
+
 
   //  byte last_red_hour=-1;
   //  byte last_red_min=-1;
@@ -482,6 +498,7 @@ void ITZoneTimer::process() {
 
   last_red_hour = curr_hour;
   last_red_min = curr_min;
+  //Serial.printf("process END\n");
 
 }
 

@@ -1,5 +1,5 @@
 #include <ESP8266WiFiMulti.h>
-
+#include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 
 #include <ArduinoOTA.h>
@@ -538,35 +538,45 @@ void initWatchdog() {
 */
 
 FirmwareVersionStruct getFirmwareVersionFromNet() {
-  FirmwareVersionStruct ret;
+
   HTTPClient client;
 
-  //  conf.firmware_url = "http://itzone.pl/firmwareupdate/version.txt";
+strcpy(conf.firmware_url,"http://itzone.pl/updateespmgr/");
 
-  //    float flashChipSize = (float)ESP.getFlashChipSize() / 1024.0 / 1024.0; //powinno dac 4
+char csrtmem[5];
+itoa((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0), csrtmem, 10);
+strcat(conf.firmware_url,csrtmem);
+strcat(conf.firmware_url,"MB/version.txt");
 
-  //  conf.firmware_url = "http://itzone.pl/updateespmgr/"+String((int)(ESP.getFlashChipSize()/ 1024.0 / 1024.0))+"MB/version.txt";
-  conf.firmware_url = "http://itzone.pl/updateespmgr/" + String((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0)) + "MB/version.txt";
+  //conf.firmware_url = String("http://itzone.pl/updateespmgr/4MB/version.txt");
+
+  MQTTLogMessage(conf.firmware_url);
 
   //    Serial.printf("(int)ESP.getFlashChipSize() : [%d]\n",(int)ESP.getFlashChipSize());
 
   //    Serial.printf("getFirmwareVersionFromNet : [%s]\n",conf.firmware_url.c_str() );
 
   //MQTTLogMessage(String("getFirmwareVersionFromNet : ")+conf.firmware_url );
-  MQTTLogMessage(String("getFirmwareVersionFromNet : ") + String((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0)) + "MB");
+  //MQTTLogMessage(String("getFirmwareVersionFromNet : ") + String((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0)) + "MB");
 
   client.begin(conf.firmware_url); //HTTP
 
-  MQTTLogMessage("After begin");
+  //client.begin("http://api.apixu.com/v1/forecast.json?key=4fc4966df0e940bbb52171757172108&q=Warsaw");
 
+//delay (2000);
+  //MQTTLogMessage("After begin");
+//delay (2000);
   int httpRetCode = client.GET();
 
-  MQTTLogMessage("After GET");
+ // MQTTLogMessage("After GET");
+  FirmwareVersionStruct ret;
 
   //  Serial.printf("ret code [%d]\n", httpRetCode );
 
   if (httpRetCode == HTTP_CODE_OK) {
     String payload = client.getString();
+
+
     //    Serial.println(payload);
 
     //payload.trim();
@@ -574,39 +584,31 @@ FirmwareVersionStruct getFirmwareVersionFromNet() {
     //String firmware;
     //String spiffs;
 
-    MQTTLogMessage("if (httpRetCode == HTTP_CODE_OK) 1");
+
 
     if (isValidJson(payload) == false) return ret;
 
     char inchars[payload.length() + 1];
     strcpy(inchars, payload.c_str());
 
-    DynamicJsonDocument doc(payload.length() + 1);
-    deserializeJson(doc, inchars);
-    JsonObject root = doc.to < JsonObject > ();
-
-    MQTTLogMessage("if (httpRetCode == HTTP_CODE_OK) 2");
-
-    /*
-        DynamicJsonDocument jsonBuffer(conf.json_max_length);
-
-        JsonObject root = jsonBuffer.parseObject(payload);
+    DynamicJsonDocument root(payload.length() + 1);
+    deserializeJson(root, inchars);
+    //JsonObject root = doc.to < JsonObject > ();
 
 
-        // Test if parsing succeeds.
-        if (!root.success()) {
-          Serial.println("parseObject() failed");
-          ret.firmware_version = conf.firmware_version;
-          ret.spiffs_version = conf.spiffs_version;
 
-          return ret;
-        }
-    */
+//---------------------------    Tu dwa restarty i działa---------------------------
+
 
     float firmware_version = root["firmware_version"];
     float spiffs_version = root["spiffs_version"];
     const char * firmware = root["firmware"];
     const char * spiffs = root["spiffs"];
+
+
+//---------------------------    Tu więcej restartów i działa---------------------------
+
+
 
     ret.firmware_version = firmware_version;
     ret.spiffs_version = spiffs_version;
@@ -618,6 +620,8 @@ FirmwareVersionStruct getFirmwareVersionFromNet() {
     ret.firmware.trim();
     ret.spiffs.trim();
 
+
+
     addAppLogMessage(String("Versions from net: firmware ") + ret.firmware_version + ", spiffs " + ret.spiffs_version);
     MQTTLogMessage(String("Versions from net: firmware ") + ret.firmware_version + ", spiffs " + ret.spiffs_version);
 
@@ -627,6 +631,9 @@ FirmwareVersionStruct getFirmwareVersionFromNet() {
     //            Serial.printf("ret.version: [%s]\n", ret.version.c_str());
     //            Serial.printf("ret.firmware: [%s]\n", ret.firmware.c_str());
     //            Serial.printf("ret.spiffs: [%s]\n", ret.spiffs.c_str());
+
+
+
   } else {
     Serial.printf("[HTTP GET failed: %s\n", client.errorToString(httpRetCode).c_str());
   }
@@ -1074,7 +1081,9 @@ bool loadConfigFromString(String in ) {
     conf.relays[i].relay_state = relay["relay_state"];
     conf.relays[i].domoticz_device_idx = relay["domoticz_device_idx"];
 
-    //Serial.printf("\n\n\n\n----------------------- Przeczytałem relay state %d \n\n\n\n\n",conf.relays[i].relay_state );
+
+//    Serial.printf("\n\n--load config Przeczytałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
+
 
     //delay(4000);
 
@@ -1182,14 +1191,22 @@ bool loadConfigFromString(String in ) {
   const char * OTA_password = json["OTA_password"];
   if (OTA_password != NULL) conf.OTA_password = OTA_password;
 
-  const char * OTA_enable = json["OTA_enable"];
+  //const char * OTA_enable = json["OTA_enable"];
   if (json["OTA_enable"] != NULL) conf.OTA_enable = json["OTA_enable"];
 
-  const char * discoverable = json["discoverable"];
+  //const char * discoverable = json["discoverable"];
   if (json["discoverable"] != NULL) conf.discoverable = json["discoverable"];
 
-  const char * network_update = json["network_update"];
-  if (network_update != NULL) conf.network_update = json["network_update"];
+//  const char * network_update = json["network_update"];
+//  if (network_update != NULL) conf.network_update = json["network_update"];
+  if (json["network_update"] != NULL) conf.network_update = json["network_update"];
+// if (strcmp(json["network_update"], "true")==0 ) conf.network_update = 1;
+//XXXXXXXXXXXXXXXXXXXXXXXXX
+//MQTTLogMessage(json["network_update"]);
+//MQTTLogMessage(String("network_update 2 ")+String(network_update) );
+//MQTTLogMessage(String("network_update 3 ")+String(conf.network_update) );
+ 
+
 
   const char * MQTT_enable = json["MQTT_enable"];
 
@@ -1281,7 +1298,7 @@ bool loadConfig() {
 
   //    content.replace(",",",\n");
 
-  Serial.println(content.c_str());
+  //Serial.println(content.c_str());
 
   bool loadConfigRet = loadConfigFromString(content);
 
@@ -1334,6 +1351,10 @@ bool saveConfig() {
     relay["relay_conn_type"] = conf.relays[i].relay_conn_type;
     relay["relay_switch_pin"] = conf.relays[i].relay_switch_pin;
     relay["relay_state"] = conf.relays[i].relay_state;
+
+//    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
+//    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",relay["relay_state"] , i);
+
     relay["relay_led_pin"] = conf.relays[i].relay_led_pin;
     relay["relay_led_conn_type"] = conf.relays[i].relay_led_conn_type;
     relay["domoticz_device_idx"] = conf.relays[i].domoticz_device_idx;
