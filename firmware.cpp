@@ -87,7 +87,8 @@ void handleFirmwarePost() {
 
       MQTTLogMessage(String("Update SPIFFS: ") + upload.filename);
 
-      mode = U_SPIFFS;
+      //mode = U_SPIFFS;
+      mode = U_FS;
     }
 
     uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;

@@ -1,8 +1,8 @@
-#include <TimeLib.h>
+//#include <TimeLib.h>
 
 #include <NtpClientLib.h>
 
-#include <WiFiUdp.h>
+//#include <WiFiUdp.h>
 
 #include "ntp.h"
 

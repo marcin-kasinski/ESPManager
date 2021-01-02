@@ -102,6 +102,7 @@ void timer_func_relayOff(byte device_id) {
   MQTTLogMessage(String("TIMER relayOff executed END"));
 }
 
+/*
 void timer_func_RGBLedOn(byte device_id) {
   MQTTLogMessage(String("TIMER RGBLedOn executed device_id =") + device_id);
   addAppLogMessage(String("TIMER RGBLedOn executed [") + device_id + "]");
@@ -109,7 +110,8 @@ void timer_func_RGBLedOn(byte device_id) {
   RGBLedSetStatePermanently(1);
 
 }
-
+*/
+/*
 void timer_func_RGBLedOff(byte device_id) {
   MQTTLogMessage(String("TIMER RGBLedOff executed device_id =") + device_id);
   addAppLogMessage(String("TIMER RGBLedOff executed [") + device_id + "]");
@@ -117,7 +119,7 @@ void timer_func_RGBLedOff(byte device_id) {
   RGBLedSetStatePermanently(0);
 
 }
-
+*/
 void timer_func_getSunriseSunsetTime(byte device_id) {
   //if (runtime.curr_hour<4) return;
 
@@ -145,6 +147,7 @@ void timer_func_relayOffAtSunrise(byte device_id) {
   }
 }
 
+/*
 void timer_func_RGBLedOnAtSunset(byte device_id) {
   if (runtime.curr_hour == runtime.sunset_hour && runtime.curr_min == runtime.sunset_minute) RGBLedSetStatePermanently(1);
 
@@ -154,7 +157,7 @@ void timer_func_RGBLedOffAtSunrise(byte device_id) {
   if (runtime.curr_hour == runtime.sunrise_hour && runtime.curr_min == runtime.sunrise_minute) RGBLedSetStatePermanently(0);
 
 }
-
+*/
 ITZoneTimer::ITZoneTimer() {}
 
 void ITZoneTimer::begin() {
@@ -544,10 +547,10 @@ void ITZoneTimer::addTask(String type, byte device_id, String function_name, Str
   if (cronObject.function_name.equals("Relay on")) cronObject.fn_Callback = timer_func_relayOn;
   else if (cronObject.function_name.equals("Relay off")) cronObject.fn_Callback = timer_func_relayOff;
 
-  else if (cronObject.function_name.equals("RGBLed on")) cronObject.fn_Callback = timer_func_RGBLedOn;
-  else if (cronObject.function_name.equals("RGBLed off")) cronObject.fn_Callback = timer_func_RGBLedOff;
-  else if (cronObject.function_name.equals("RGBLed off at sunrise")) cronObject.fn_Callback = timer_func_RGBLedOffAtSunrise;
-  else if (cronObject.function_name.equals("RGBLed on at sunset")) cronObject.fn_Callback = timer_func_RGBLedOnAtSunset;
+//  else if (cronObject.function_name.equals("RGBLed on")) cronObject.fn_Callback = timer_func_RGBLedOn;
+//  else if (cronObject.function_name.equals("RGBLed off")) cronObject.fn_Callback = timer_func_RGBLedOff;
+//  else if (cronObject.function_name.equals("RGBLed off at sunrise")) cronObject.fn_Callback = timer_func_RGBLedOffAtSunrise;
+//  else if (cronObject.function_name.equals("RGBLed on at sunset")) cronObject.fn_Callback = timer_func_RGBLedOnAtSunset;
 
   else if (cronObject.function_name.equals("Relay off at sunrise")) cronObject.fn_Callback = timer_func_relayOffAtSunrise;
   else if (cronObject.function_name.equals("Relay on at sunset")) cronObject.fn_Callback = timer_func_relayOnAtSunset;

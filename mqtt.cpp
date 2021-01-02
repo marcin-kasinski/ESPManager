@@ -42,7 +42,7 @@ bool MQTTpublish(String message) {
 bool MQTTLogMessage(String message)
 //bool MQTTLogMessage(const char *message)
 {
-  Serial.printf("MQTTLog [%s]\n", message.c_str());
+  if (conf.interruptProcess == false) Serial.printf("MQTTLog [%s]\n", message.c_str());
   //Serial.printf("MQTTLog [%s]\n",message); 
   return true;
   //  return MQTTpublish("itzone/device/"+conf.hostName+"/log", NTP.getTimeDateString()+":"+message);

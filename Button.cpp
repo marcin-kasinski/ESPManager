@@ -1,3 +1,4 @@
+
 #include "Button.h"
 
 #include <Arduino.h>
@@ -53,26 +54,15 @@ bool Button::process() {
 
   //        Serial.printf("thisButtonState %d\n",thisButtonState );
 
-  /*
-    // if the current state does not match the previous state
-    // the button was just pressed/released, or is transition noise
-    if (thisButtonState != lastButtonState) {
-      // reset the timer
-      lastDebounceTime = millis();
-    }
-  */
+ 
+
   // once delay millis have elapsed, if the state remains the same, register the press
   //  if ((millis() - lastDebounceTime) > debounceDelay) {
 
   // if the button state has changed
   if (thisButtonState != buttonState) {
 
-    /*
-            Serial.printf("toggle \n");
-            Serial.printf("thisButtonState %d\n",thisButtonState);
-            Serial.printf("lastButtonState %d\n",lastButtonState);
-            Serial.printf("buttonState %d\n",buttonState );
-    */
+
     buttonState = thisButtonState;
 
     // only toggle the LED if the buttonState has switched from LOW to HIGH

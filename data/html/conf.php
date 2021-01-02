@@ -306,35 +306,39 @@ function addPhysicalForm(index)
         'value': '-1'
         }, 
 		{
-        'text': 'Raspberry Pi GPIO26',
+        'text': 'GPIO26 (Raspberry Pi)',
         'value': '26'
         }, 
 		{
-        'text': 'Raspberry Pi GPIO19',
+        'text': 'GPIO19 (Raspberry Pi)',
         'value': '19'
         }, 
 		{
-        'text': 'Raspberry Pi GPIO13',
+        'text': 'GPIO13 (Raspberry Pi)',
         'value': '13'
         },
 		{
-        'text': 'Raspberry Pi GPIO6',
+        'text': 'GPIO6 (Raspberry Pi)',
         'value': '6'
         },        
 		{
-        'text': 'WeMos D1 Mini, Supla GPIO5',
+        'text': 'GPIO5 (WeMos D1 Mini, Supla, Sonoff TX Relay 2)',
         'value': '5'
         },        
 		{
-        'text': 'Shelly GPIO4',
+        'text': 'GPIO4 (Shelly Relay 1, Sonoff TX Relay 3)',
         'value': '4'
+        },        
+		{
+        'text': 'GPIO15 (Shelly Relay 2)',
+        'value': '15'
         }, 
 		{
-        'text': 'Supla GPIO13',
+        'text': 'GPIO13 (Supla GPIO13)',
         'value': '13'
         }, 
 		{
-        'text': 'Sonoff GPIO12',
+        'text': 'GPIO12 (Sonoff TX Relay 1)',
         'value': '12'
         }
 , 
@@ -368,29 +372,38 @@ function addPhysicalForm(index)
         }
 , 
 		{
-        'text': 'GPIO 0',
+        'text': 'GPIO0 (Sonoff TX Switch 1)',
         'value': '0'
         }
-
 , 
 		{
-        'text': 'Supla Sensor 1 GPIO4',
+        'text': 'GPIO4 (Supla Sensor 1)',
         'value': '4'
         }
 , 
 		{
-        'text': 'Supla Sensor 2 GPIO16',
-        'value': '16'
+        'text': 'GPIO9 (Sonoff TX Switch 3)',
+        'value': '9'
         }
 , 
 		{
-        'text': 'Supla Button 1 GPIO14',
+        'text': 'GPIO10 (Sonoff TX Switch 2)',
+        'value': '10'
+        }
+, 
+		{
+        'text': 'GPIO12 (Supla Button 2)',
+        'value': '12'
+        }
+, 
+		{
+        'text': 'GPIO14 (Supla Button 1)',
         'value': '14'
         }
 , 
 		{
-        'text': 'Supla Button 2 GPIO12',
-        'value': '12'
+        'text': 'GPIO16 (Supla Sensor 2)',
+        'value': '16'
         }
 
 		]) ;

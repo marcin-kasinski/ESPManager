@@ -22,15 +22,11 @@
 
 #include "mqtt.h"
 
-#include <Ticker.h>
-
 #include <NtpClientLib.h>
 
 #include <LinkedList.h>
 
 LinkedList < AppLog > appLogs = LinkedList < AppLog > ();
-
-//Ticker tickerOSWatch;
 
 //unsigned long OSWATCH_RESET_TIME;
 
@@ -114,7 +110,7 @@ bool isupdateSunriseSunsetUpToDate() {
   if (runtime.sunset_update_time.indexOf(current_date) > 0) {
     //    Serial.printf("sunset time is up to date\n");
     //    MQTTLogMessage("Sunset time is up to date. Update time: " + runtime.sunset_update_time);
-    MQTTLogMessage("Sunset time is up to date");
+    //MQTTLogMessage("Sunset time is up to date");
     ret = true;
   }
   return ret;
@@ -126,7 +122,7 @@ void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String s
 
   //Serial.printf("updateSunriseSunsetInfo sunrise [%s] sunset [%s]\n",sunrise.c_str(),sunset.c_str());
 
-  MQTTLogMessage("updateSunriseSunsetInfo START");
+  //MQTTLogMessage("updateSunriseSunsetInfo START");
 
   //Serial.printf("updateSunriseSunsetInfo current_date [%s]\n",current_date.c_str());
   //Serial.printf("updateSunriseSunsetInfo runtime.sunset_update_time [%s]\n",runtime.sunset_update_time.c_str());
@@ -144,7 +140,7 @@ void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String s
 
   String message = "sunset_update_time updated " + getHourString(runtime.sunrise_hour, runtime.sunrise_minute) + " / sunset " + getHourString(runtime.sunset_hour, runtime.sunset_minute);
 
-  MQTTLogMessage(message);
+  //MQTTLogMessage(message);
   //      MQTTLogMessage("U2");
   addAppLogMessage(message);
   //          MQTTLogMessage("U3");
@@ -152,7 +148,7 @@ void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String s
   //if (conf.discoverable==true)   sendUDPMessageAsync("PING");
   //        MQTTLogMessage("U4");
 
-  MQTTLogMessage("updateSunriseSunsetInfo END");
+  //MQTTLogMessage("updateSunriseSunsetInfo END");
 
   //      MQTTLogMessage("U5");
 
@@ -220,28 +216,29 @@ void getSunriseSunset(String key, String city) {
   */
 
   //http://api.apixu.com/v1/forecast.json?key=key&q=Warsaw
+  //http://api.weatherstack.com/current?access_key=key&query=Warsaw
 
   HTTPClient http;
-  http.begin("http://api.apixu.com/v1/forecast.json?key=" + key + "&q=" + city);
+  http.begin("http://api.weatherstack.com/forecast?access_key=" + key + "&query=" + city);
 
-  //  MQTTLogMessage(String(""getSunset requesting"));
+  //MQTTLogMessage(String("getSunset requesting"));
 
   int httpRetCode = http.GET();
 
   //  MQTTLogMessage(String("getSunset ret code ") + httpRetCode );
 
-  //  Serial.printf("ret code [%d]\n", httpRetCode );
+  //Serial.printf("ret code [%d]\n", httpRetCode );
 
   String payload;
   if (httpRetCode == HTTP_CODE_OK) {
     //  payload = client.getString();
-    //  Serial.printf("getSunset payload  %s\n", payload.c_str());
+    Serial.printf("getSunset payload");
 
     // get lenght of document (is -1 when Server sends no Content-Length header)
     int len = http.getSize();
 
     // create buffer for read
-    uint8_t buff[128] = {
+    uint8_t buff[512] = {
       0
     };
     //byte buff[128] = { 0 };
@@ -262,13 +259,15 @@ void getSunriseSunset(String key, String city) {
         //                        Serial.write(buff, c);
 
         String line = String((const char * ) buff);
+        //Serial.printf("read line %s\n", line.c_str());
 
         int pos_sunset = line.indexOf("sunset");
         int pos_sunrise = line.indexOf("sunrise");
 
         if (pos_sunset > 0) {
           found_data = true;
-          //          Serial.printf("%s\n", line.c_str());
+
+                    Serial.printf("Found data %s\n", line.c_str());
           String sunset = line.substring(pos_sunset + 9, pos_sunset + 14);
           //          Serial.printf("sunset: [%s]\n", sunset.c_str());
           //          Serial.printf("sunset_hour: [%s]\n", sunset.substring(0, 2).c_str());
@@ -280,7 +279,7 @@ void getSunriseSunset(String key, String city) {
           //          Serial.printf("runtime.sunset_hour: [%d]\n", runtime.sunset_hour);
           //          Serial.printf("runtime.sunset_minute: [%d]\n", runtime.sunset_minute);
 
-          MQTTLogMessage(String("Found sanset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
+          //MQTTLogMessage(String("Found sanset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
           addAppLogMessage(String("Found sanset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
 
         }
@@ -296,6 +295,8 @@ void getSunriseSunset(String key, String city) {
           runtime.sunrise_minute = atoi(sunrise.substring(3, 5).c_str());
           //          Serial.printf("runtime.sunrise_hour: [%d]\n", runtime.sunrise_hour);
           //          Serial.printf("runtime.sunrise_minute: [%d]\n", runtime.sunrise_minute);
+          //MQTTLogMessage(String("Found sunrise in data ") + runtime.sunrise_hour + ":" + runtime.sunrise_minute);
+          addAppLogMessage(String("Found sunrise in data ") + runtime.sunrise_hour + ":" + runtime.sunrise_minute);
 
         }
 
@@ -477,7 +478,7 @@ String getRandomNumbers(String input) {
 
 void reboot() {
 
-  MQTTLogMessage("Rebooting...");
+  //MQTTLogMessage("Rebooting...");
 
   SPIFFS.end();
   ESP.restart();
@@ -550,7 +551,7 @@ strcat(conf.firmware_url,"MB/version.txt");
 
   //conf.firmware_url = String("http://itzone.pl/updateespmgr/4MB/version.txt");
 
-  MQTTLogMessage(conf.firmware_url);
+  //MQTTLogMessage(conf.firmware_url);
 
   //    Serial.printf("(int)ESP.getFlashChipSize() : [%d]\n",(int)ESP.getFlashChipSize());
 
@@ -623,10 +624,10 @@ strcat(conf.firmware_url,"MB/version.txt");
 
 
     addAppLogMessage(String("Versions from net: firmware ") + ret.firmware_version + ", spiffs " + ret.spiffs_version);
-    MQTTLogMessage(String("Versions from net: firmware ") + ret.firmware_version + ", spiffs " + ret.spiffs_version);
+    //MQTTLogMessage(String("Versions from net: firmware ") + ret.firmware_version + ", spiffs " + ret.spiffs_version);
 
     addAppLogMessage(String("Current versions: firmware ") + conf.firmware_version + ", spiffs " + conf.spiffs_version);
-    MQTTLogMessage(String("Current versions: firmware ") + conf.firmware_version + ", spiffs " + conf.spiffs_version);
+    //MQTTLogMessage(String("Current versions: firmware ") + conf.firmware_version + ", spiffs " + conf.spiffs_version);
 
     //            Serial.printf("ret.version: [%s]\n", ret.version.c_str());
     //            Serial.printf("ret.firmware: [%s]\n", ret.firmware.c_str());
@@ -715,14 +716,14 @@ void updateFirmwareFromNet() {
 
   {
     //    Serial.println("No new version from net");
-    MQTTLogMessage(String("Firmware is up to date"));
+    //MQTTLogMessage(String("Firmware is up to date"));
 
     return;
   }
 
   //  Serial.println("updating data from net");
 
-  MQTTLogMessage(String("updating data from net"));
+  //MQTTLogMessage(String("updating data from net"));
 
   //Serial.printf("1.11 cmp 1.12 %d \n", strcmp( "1.11" ,"1.12"));
   //Serial.printf("1.12 cmp 1.11 %d \n", strcmp( "1.12" ,"1.11"));
@@ -828,9 +829,9 @@ void processAPReboot() {
   //if (mins_interval>10 && getMode== WIFI_AP_STA )   {reboot();}
   if (mins_interval > 10 && getMode != WIFI_STA) {
 
-    MQTTLogMessage("mins_interval=" + mins_interval);
-    MQTTLogMessage("getMode=" + getMode);
-    MQTTLogMessage("WIFI_STA=" + WIFI_STA);
+    //MQTTLogMessage("mins_interval=" + mins_interval);
+    //MQTTLogMessage("getMode=" + getMode);
+    //MQTTLogMessage("WIFI_STA=" + WIFI_STA);
 
     reboot();
 

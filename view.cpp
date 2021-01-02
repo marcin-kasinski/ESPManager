@@ -162,9 +162,9 @@ void handleJSONSwitchChange() {
 
   // jesli led
   if (index == -1) {
-    RGBLedSetStatePermanently(!conf.rgbled.state);
+//    RGBLedSetStatePermanently(!conf.rgbled.state);
 
-    content = content + "{" + "\"n\":\"rgbled.state\"," + "\"v\":\"" + conf.rgbled.state + "\"" + ",\"h\":\"\"}\n";
+//    content = content + "{" + "\"n\":\"rgbled.state\"," + "\"v\":\"" + conf.rgbled.state + "\"" + ",\"h\":\"\"}\n";
 
   }
   //jesli relay

@@ -1,3 +1,5 @@
+//void ICACHE_RAM_ATTR handleInterrupt();
+
 #include <NtpClientLib.h>
 
 #include <stdio.h>
@@ -18,7 +20,7 @@
 
 #include "mqtt.h"
 
-#include "temp.h"
+//#include "temp.h"
 
 #include "udp.h"
 
@@ -36,7 +38,7 @@
 
 #include "wifi.h"
 
-#include "led.h"
+//#include "led.h"
 
 char * update_path = "/firmware";
 
@@ -113,7 +115,7 @@ void setup() {
 
   httpServer.begin();
 
-  if (conf.rgbled.enable == true) initRGBLed();
+//  if (conf.rgbled.enable == true) initRGBLed();
 
   timer1.begin();
 
@@ -138,6 +140,7 @@ void setup() {
   }
 
   timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "Random 0/59/1", "Range 0-21", "*", "*", "*");
+  //timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "*", "*", "*", "*", "*");
   if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster", "Every 20", "*", "*", "*", "*");
 
   initUDP();
@@ -145,7 +148,7 @@ void setup() {
 
 void loop() {
 
-  processRGBLed();
+//  processRGBLed();
 
   //processWIFIRepeater();
   httpServer.handleClient();
@@ -170,6 +173,7 @@ void loop() {
 
   //if (conf.relays[0].relay_pin>=0 && conf.relays[0].relay_switch_pin>=0 && conf.relays[0].relay_switch_pin_process_method==RELAY_SWITCH_PIN_PROCESS_METHOD_LOOP) processSwitch(0);
   if (conf.relays[0].relay_pin >= 0 && conf.relays[0].relay_switch_pin >= 0 && conf.relays[0].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(0);
+  if (conf.relays[1].relay_pin >= 0 && conf.relays[1].relay_switch_pin >= 0 && conf.relays[1].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(1);
   //if (conf.relays[0].relay_pin>=0 && conf.relays[0].relay_led_pin>=0)  processLed(0) ;
 
   if (conf.OTA_enable == true) processOTA();

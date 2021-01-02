@@ -17,7 +17,7 @@
 #include <NtpClientLib.h>
 
 
-long debouncing_time = 30; //Debouncing Time in Milliseconds
+long debouncing_time = 120; //Debouncing Time in Milliseconds
 volatile long last_micros[2];
 Button switchs[2]; // Connect your button between pin 2 and GND
 
@@ -49,7 +49,7 @@ void processRelayLed(int index) {
   if (current_hour_for_led >= 23 || current_hour_for_led <= 16) {
     //if (conf.serialLogging==true)   Serial.printf("disable led by time : datetime [%d]\n",current_hour_for_led);
 
-    MQTTLogMessage(String("disable pin by time : datetime ") + current_hour_for_led);
+    //MQTTLogMessage(String(F("disable pin by time : datetime ")) + current_hour_for_led);
 
     setLedState(index, 0);
 
@@ -63,13 +63,13 @@ void setLedState(int index, byte state) {
 
   if (conf.relays[index].relay_led_pin < 0) return;
 
-  MQTTLogMessage(String("setLedState state pin ") + conf.relays[index].relay_led_pin + " state " + state);
+  //MQTTLogMessage(String(F("setLedState state pin ")) + conf.relays[index].relay_led_pin + " state " + state);
 
   if (conf.relays[index].relay_led_conn_type == LED_CONN_TYPE_LOW_ON) state = !state;
 
   //if (conf.serialLogging==true) Serial.printf("digitalWrite pin %d state %d \n",conf.relays[index].relay_led_pin,state);
 
-  MQTTLogMessage(String("digitalWrite pin ") + conf.relays[index].relay_led_pin + " state " + state);
+  //MQTTLogMessage(String("digitalWrite pin ") + conf.relays[index].relay_led_pin + " state " + state);
 
   digitalWrite(conf.relays[index].relay_led_pin, state); // turn on /off relay 
 
@@ -82,16 +82,16 @@ void setRelayState(int index, byte instate) {
 
   if (conf.relays[index].relay_pin < 0) return;
 
-  MQTTLogMessage(String("setRelayState state index : ") + index + " state " + state);
+  //MQTTLogMessage(String("setRelayState state index : ") + index + " state " + state);
   addAppLogMessage(String("setRelayState state index : ") + index + " state " + state);
 
   if (conf.relays[index].relay_conn_type == RELAY_CONN_TYPE_NC) state = !state;
 
-  MQTTLogMessage(String("digitalWrite pin ") + conf.relays[index].relay_pin + " state " + state);
+  //MQTTLogMessage(String("digitalWrite pin ") + conf.relays[index].relay_pin + " state " + state);
 
   digitalWrite(conf.relays[index].relay_pin, state); // turn on /off relay 
 
-  MQTTLogMessage(String("digitalWrite end pin ") + conf.relays[index].relay_pin + " state " + state);
+  //MQTTLogMessage(String("digitalWrite end pin ") + conf.relays[index].relay_pin + " state " + state);
 
   if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_ON) setLedState(index, instate);
   else if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_OFF) setLedState(index, !instate);
@@ -135,8 +135,12 @@ void InterruptSwitch(int index) {
 void processSwitchInterrupt(int index) {
 
   if (conf.relays[index].relay_switch_pressed == true) {
+   conf.relays[index].relay_switch_pressed = false;
+ 
+    //MQTTLogMessage(String("Relay switch pressed index ") + index );
+    //MQTTLogMessage(String("Relay state ") + conf.relays[index].relay_state );
 
-    MQTTLogMessage(String("Relay switch pressed index ") + index);
+    debounceInterruptBackend(index);
 
     if (conf.MQTT_enable && conf.relays[index].domoticz_device_idx > 0) {
       String switchcmd = "On";
@@ -144,7 +148,6 @@ void processSwitchInterrupt(int index) {
       MQTTpublish(String("{\"command\": \"switchlight\", \"idx\": ") + conf.relays[index].domoticz_device_idx + ", \"switchcmd\": \"" + switchcmd.c_str() + "\"  }");
     } //  if (conf.MQTT_enable && conf.relays[index].domoticz_device_idx>0)
 
-    conf.relays[index].relay_switch_pressed = false;
   } //  if (conf.relays[index].relay_switch_pressed == true)
 
 }
@@ -170,7 +173,7 @@ void debounceInterruptBackend(int index) {
   //  if((long)(micros() - last_micros[index]) >= debouncing_time * 1000) {
   InterruptSwitch(index);
 
-  MQTTLogMessage(String("debounceInterruptBackend  ") + index);
+  //MQTTLogMessage(String("debounceInterruptBackend  ") + index);
 
   if (conf.MQTT_enable && conf.relays[index].domoticz_device_idx > 0) {
     String switchcmd = "On";
@@ -182,16 +185,16 @@ void debounceInterruptBackend(int index) {
   //  }//  if((long)(micros() - last_micros[index]) >= debouncing_time * 1000) {
 }
 
-void debounceInterrupt0() {
+void ICACHE_RAM_ATTR  debounceInterrupt0() {
 
   if (abs((long)(micros() - last_micros[0])) >= debouncing_time * 1000) {
-    //Serial.printf("debounceInterrupt0\n" );
+    //Serial.printf("debounceInterrupt0 START\n" );
     conf.serialLogging = false;
     conf.interruptProcess = true;
 
     //Serial.printf("debounceInterrupt0\n" );
 
-    debounceInterruptBackend(0);
+    //debounceInterruptBackend(0);
     conf.relays[0].relay_switch_pressed = true;
 
     last_micros[0] = micros();
@@ -204,22 +207,25 @@ void debounceInterrupt0() {
 
 }
 
-void debounceInterrupt1() {
+void ICACHE_RAM_ATTR  debounceInterrupt1() {
 
   if (abs((long)(micros() - last_micros[1])) >= debouncing_time * 1000) {
+    //Serial.printf("debounceInterrupt1 START\n" );
 
     conf.serialLogging = false;
     conf.interruptProcess = true;
 
     //Serial.printf("debounceInterrupt1\n" );
 
-    debounceInterruptBackend(1);
+    //debounceInterruptBackend(1);
     conf.relays[1].relay_switch_pressed = true;
 
     last_micros[1] = micros();
 
     conf.serialLogging = true;
     conf.interruptProcess = false;
+
+    //Serial.printf("debounceInterrupt1 END\n" );
 
   } //if(abs((long)(micros() - last_micros[1])) >= debouncing_time * 1000) {
 
@@ -279,7 +285,7 @@ void initRelay(int index) {
 
   addAppLogMessage(String("initRelay [relay_pin=") + conf.relays[index].relay_pin + " [relay_state=" + conf.relays[index].relay_state);
   //Serial.printf("initRelay [relay_pin=%d] [relay_state=%d]\n",conf.relays[index].relay_pin,conf.relays[index].relay_state);
-  MQTTLogMessage(String("initRelay [relay_pin=") + conf.relays[index].relay_pin + " [relay_state=" + conf.relays[index].relay_state);
+  //MQTTLogMessage(String("initRelay [relay_pin=") + conf.relays[index].relay_pin + " [relay_state=" + conf.relays[index].relay_state);
 
   pinMode(conf.relays[index].relay_pin, OUTPUT);
   setRelayState(index, conf.relays[index].relay_state);
@@ -289,7 +295,7 @@ void initLed(int index) {
   if (conf.relays[index].relay_led_pin < 0) return;
 
   //Serial.printf("initLed [led_pin=%d]\n",conf.relays[index].relay_led_pin);
-  MQTTLogMessage(String("initLed [led_pin=") + conf.relays[index].relay_led_pin + "]");
+  //MQTTLogMessage(String("initLed [led_pin=") + conf.relays[index].relay_led_pin + "]");
 
   pinMode(conf.relays[index].relay_led_pin, OUTPUT);
 }
@@ -297,7 +303,7 @@ void initLed(int index) {
 void initDevices() {
 
   //Serial.printf("initDevice\n");
-  MQTTLogMessage(String("initDevice"));
+  //MQTTLogMessage(String("initDevice"));
 
   initLed(0);
   initLed(1);
@@ -305,6 +311,6 @@ void initDevices() {
   initRelay(1);
   initRelaySwitch(0);
   initRelaySwitch(1);
-  MQTTLogMessage(String("initDevice END"));
+  //MQTTLogMessage(String("initDevice END"));
 
 }
