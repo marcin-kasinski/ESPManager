@@ -69,7 +69,7 @@ bool processToken() {
   return true;
 
 }
-
+/*
 void handleRestAPI() {
 
   //Serial.printf("handleRestAPI :%s\n");
@@ -89,13 +89,19 @@ void handleRestAPI() {
   httpServer.sendContent(content);
 
 }
-
+*/
 void handlePage(String page) {
 
   if (!processAuth()) return;
 
   //String content="<script>var token='"+runtime.token+"';\nalert('token '+token);\n</script>";
   String content = "<script>\nvar token='" + runtime.token + "';\n</script>";
+
+
+//int s1=getWebFileSize("/html/before.php") ;
+//int s2=getWebFileSize("/html/after.php") ;
+//int s3=getWebFileSize((char *) page.c_str()) ;
+
 
   int size = getFileSize("/html/before.php") + getFileSize("/html/after.php") + content.length() + getFileSize((char * ) page.c_str());
   httpServer.setContentLength(size);
@@ -126,7 +132,7 @@ void handleRoot() {
   handlePage("/html/status.php");
 
   return;
-
+/*
   if (!processAuth()) return;
 
   int size = getFileSize("/html/before.php") + getFileSize("/html/after.php") + getFileSize("/html/status.php");
@@ -142,7 +148,7 @@ void handleRoot() {
   httpServerSendFileContent("/html/after.php");
   //httpServer.sendContent(content);
   //if (ret==-1) httpServer.send(200, "text/html", "error....");
-
+*/
 }
 
 void handleJSONSwitchChange() {

@@ -213,7 +213,7 @@ else visibility=1;
 		data-type="min(-1)" data-optional="false" 	>
 
 		<option value="-1" data-index="2" data-depends="[]">Not used</option>
-		<option value="4" data-index="3" data-depends="[]">WeMos D1 Mini GPIO4</option>
+		<option value="4" data-index="3" data-depends="[]">GPIO4 (WeMos D1 Mini)</option>
 	</select>
 	</div></div>
 
@@ -343,7 +343,7 @@ function addPhysicalForm(index)
         }
 , 
 		{
-        'text': 'WeMos D1 Mini internal LED GPIO2',
+        'text': 'GPIO2 (WeMos D1 Mini internal LED)',
         'value': '2'
         }
 
@@ -428,12 +428,17 @@ function addPhysicalForm(index)
         }
 		, 
 		{
-        'text': 'GPIO13',
+        'text': 'GPIO12 (Sonoff)',
         'value': '13'
         }
 		, 
 		{
-        'text': 'D4 GPIO2',
+        'text': 'GPIO13 (Sonoff TX Led)',
+        'value': '13'
+        }
+		, 
+		{
+        'text': 'GPIO2 (D4)',
         'value': '2'
         }
 

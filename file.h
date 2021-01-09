@@ -14,6 +14,7 @@ void readSpiffsVersion();
 
 void prepareHeader( int code, const char* content_type, size_t contentLength);
 int getFileSize(char *path);
+int getWebFileSize(char * path) ;
 
 //int httpServerSendFileContent(int code,const char* content_type,char *path);
 int httpServerSendFileContent(char *path);
@@ -24,4 +25,3 @@ int readFullFile(char *path, char *data);
 
 bool saveFile(String path,String indata) ;
 #endif
-

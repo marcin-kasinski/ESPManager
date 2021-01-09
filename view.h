@@ -20,7 +20,7 @@ void handleJSONListOtherDevices();
 void handleConfUpload();
 
 void handleFactoryReset();
-void handleRestAPI();
+//void handleRestAPI();
 
 void handleConfUploadAfterFinished();
 void handleJSONSwitchChange();
@@ -31,4 +31,3 @@ void handleJSONListLogs();
 
 bool is_authentified();
 bool processAuth();
-

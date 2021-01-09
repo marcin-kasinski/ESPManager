@@ -1,6 +1,7 @@
 #include "util.h"
 
 #include "wifi.h"
+#include "mqtt.h"
 
 void setWIFIAP() {
 
@@ -158,7 +159,9 @@ boolean setWIFIClient() {
   //  return false;
   }
   */
-  Serial.printf("Connecting WIFI STA... SID: [%s] mac Address: %s\n", conf.wifi_ssid.c_str(), WiFi.macAddress().c_str());
+//  Serial.printf("Connecting WIFI STA... SID: [%s] mac Address: %s\n", conf.wifi_ssid.c_str(), WiFi.macAddress().c_str());
+    MQTTLogMessage(String("Connecting WIFI STA... SID: ") + String(conf.wifi_ssid.c_str()) + " mac Address:"+ String(WiFi.macAddress().c_str()) );
+
 
   WiFi.mode(WIFI_STA);
 
@@ -181,7 +184,10 @@ boolean setWIFIClient() {
       break;
     }
 
-    Serial.printf("WiFi failed, retrying... AP mac Address: %s\n", WiFi.macAddress().c_str());
+  //  Serial.printf("WiFi failed, retrying... AP mac Address: %s\n", WiFi.macAddress().c_str());
+
+      MQTTLogMessage(String("WiFi failed, retrying... AP mac Address: ") + WiFi.macAddress().c_str());
+
 
     addAppLogMessage("WiFi failed, retrying");
 
@@ -201,8 +207,13 @@ boolean setWIFIClient() {
 
   //    addAppLogMessage("WiFi connect");
 
-  Serial.print("localIP: ");
-  Serial.println(WiFi.localIP());
+//  Serial.print("localIP: ");
+//  Serial.println(WiFi.localIP());
+
+
+      MQTTLogMessage(String("localIP: : ") + WiFi.localIP().toString() );
+
+  
   runtime.mac_STA = WiFi.macAddress();
 
   /*
@@ -258,7 +269,8 @@ boolean setWIFIClient() {
 
   //String ip= String(WiFi.localIP()[0])+String(WiFi.localIP()[1])+String(WiFi.localIP()[2])+String(WiFi.localIP()[3]);
 
-  //Serial.println(ip); 
+    MQTTLogMessage("setWIFIClient END");
+
 
   //strcpy(runtime.ip,WiFi.localIP()[0]);
 

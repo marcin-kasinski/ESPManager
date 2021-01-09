@@ -1,3 +1,4 @@
+\
 //void ICACHE_RAM_ATTR handleInterrupt();
 
 #include <NtpClientLib.h>
@@ -95,7 +96,7 @@ void setup() {
   httpServer.on("/factoryReset", handleFactoryReset);
 
   httpServer.on("/handleJSONSwitchChange", handleJSONSwitchChange);
-  httpServer.on("/restAPI", handleRestAPI);
+//  httpServer.on("/restAPI", handleRestAPI);
 
   httpServer.on("/firmware", HTTP_GET, handleFirmwareGet);
   httpServer.on("/firmware", HTTP_POST, handleFirmwarePostAfterFinished, handleFirmwarePost);
@@ -105,6 +106,8 @@ void setup() {
   httpServer.on("/login", handleLogin);
   httpServer.onNotFound(handleNotFound); //called when handler is not assigned
 
+
+
   const char * headerkeys[] = {
     "User-Agent",
     "Cookie"
@@ -113,22 +116,35 @@ void setup() {
   //ask server to track these 
   httpServer.collectHeaders(headerkeys, headerkeyssize);
 
+   MQTTLogMessage("httpServer.begin");
+
   httpServer.begin();
+
+
 
 //  if (conf.rgbled.enable == true) initRGBLed();
 
   timer1.begin();
 
+
   generateToken();
+
   timer1.addTask("SYSTEM", -1, "Generate App token", "15", "Every 2", "*", "*", "*");
 
+
   if (conf.network_update == true) {
+
+
     timer1.addTask("SYSTEM", -1, "Firmware update check", "0", "4", "*", "*", "*");
+
+
     updateFirmwareFromNet();
   }
 
+
+
   if (conf.relays[0].relay_led_pin >= 0) timer1.addTask("SYSTEM", 0, "Process relay led", "0", "*", "*", "*", "*");
-  if (conf.relays[1].relay_led_pin >= 0) timer1.addTask("SYSTEM", 1, "Process relay led", "0", "*", "*", "*", "*");
+  if (conf.relays[1].relay_led_pin >= 0) timer1.addTask("SYSTEM", 1, "Process relay led", "1", "*", "*", "*", "*");
 
   //timer1.addTask("SYSTEM",1,"XXX","Random 1/10/4","Random 1/10/4", "Random 1/10/4", "Random 1/10/4","*");
   //timer1.addTask("SYSTEM",1,"XXX","Every 10","Random 1/10/4", "*", "*","*");
@@ -139,11 +155,18 @@ void setup() {
 
   }
 
+
+
   timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "Random 0/59/1", "Range 0-21", "*", "*", "*");
   //timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "*", "*", "*", "*", "*");
   if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster", "Every 20", "*", "*", "*", "*");
 
+
+
   initUDP();
+
+MQTTLogMessage("SETUP END");
+  
 }
 
 void loop() {
@@ -174,7 +197,8 @@ void loop() {
   //if (conf.relays[0].relay_pin>=0 && conf.relays[0].relay_switch_pin>=0 && conf.relays[0].relay_switch_pin_process_method==RELAY_SWITCH_PIN_PROCESS_METHOD_LOOP) processSwitch(0);
   if (conf.relays[0].relay_pin >= 0 && conf.relays[0].relay_switch_pin >= 0 && conf.relays[0].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(0);
   if (conf.relays[1].relay_pin >= 0 && conf.relays[1].relay_switch_pin >= 0 && conf.relays[1].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(1);
-  //if (conf.relays[0].relay_pin>=0 && conf.relays[0].relay_led_pin>=0)  processLed(0) ;
+//  if (conf.relays[0].relay_pin>=0 && conf.relays[0].relay_led_pin>=0)  processLed(0) ;
+//  if (conf.relays[1].relay_pin>=0 && conf.relays[1].relay_led_pin>=0)  processLed(1) ;
 
   if (conf.OTA_enable == true) processOTA();
 
@@ -191,5 +215,16 @@ void loop() {
   //if (conf.relays[1].relay_pin>=0 && conf.relays[1].relay_led_pin>=0)  processLed(1) ;
 
   //yield();
+
+
+      if (runtime.getSunriseSunsetRequest==true) 
+      {
+        getSunriseSunset(conf.sunsetAPIKey, conf.sunsetAPICity);
+        runtime.getSunriseSunsetRequest=false;
+      }
+
+
+
+  
 
 }

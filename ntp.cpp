@@ -24,7 +24,8 @@ bool initNTPClient() {
     } else {
 
       //      MQTTLogMessage(String("Got NTP time: " ) + NTP.getTimeDateString(NTP.getLastNTPSync()));
-      if (!NTP.getTimeDateString().equals("Time not set")) getSunriseSunset(conf.sunsetAPIKey, conf.sunsetAPICity);
+      //if (!NTP.getTimeDateString().equals("Time not set")) getSunriseSunset(conf.sunsetAPIKey, conf.sunsetAPICity);
+      if (!NTP.getTimeDateString().equals("Time not set")) runtime.getSunriseSunsetRequest=true;
 
     }
   });

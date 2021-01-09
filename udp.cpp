@@ -31,12 +31,15 @@ boolean initUDP() {
 
   boolean state = false;
 
-  Serial.println("Connecting to UDP");
+
+    MQTTLogMessage("Connecting to UDP");
 
   int ret = UDP.begin(9991);
 
   if (ret) {
-    Serial.println("UDP Connection successful");
+
+    MQTTLogMessage("UDP Connection successful");
+    
     state = true;
 
     //timer1.addTask("SYSTEM",-1,"Send PING to cluster","Every 20","*", "*", "*","*");
@@ -44,7 +47,8 @@ boolean initUDP() {
 
     sendUDPMessageAsync("REFRESH");
   } else {
-    Serial.println("UDP Connection failed");
+
+    MQTTLogMessage("UDP Connection failed");
   }
 
   return state;

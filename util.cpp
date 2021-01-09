@@ -7,7 +7,7 @@
 #include <ESP8266mDNS.h>
 
 #include <ArduinoJson.h>
- //#include <EEPROM.h>
+//#include <EEPROM.h>
 #include "FS.h"
 
 #include "file.h"
@@ -157,14 +157,14 @@ void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String s
 void getSunriseSunset(String key, String city) {
 
   //  String current_date = NTP.getDateStr();
-  //  MQTTLogMessage(String("getSunset current_date:[") + current_date + "]");
+  MQTTLogMessage(String("getSunriseSunset..."));
 
   //getSunset [20:20:17 27/08/2017]
   //getSunset current_date [27/08/2017]
 
   //jeśli nie ma aktualnej daty, to wychodzi
   if (NTP.getTimeDateString().equals("Time not set")) {
-    //    MQTTLogMessage("No NTP info. Exiting");
+        MQTTLogMessage("No NTP info. Exiting");
 
     return;
   }
@@ -221,21 +221,24 @@ void getSunriseSunset(String key, String city) {
   HTTPClient http;
   http.begin("http://api.weatherstack.com/forecast?access_key=" + key + "&query=" + city);
 
-  //MQTTLogMessage(String("getSunset requesting"));
+  MQTTLogMessage(String("URL: http://api.weatherstack.com/forecast?access_key=") + key + "&query=" + city);
 
   int httpRetCode = http.GET();
 
-  //  MQTTLogMessage(String("getSunset ret code ") + httpRetCode );
+  MQTTLogMessage(String("getSunset ret code ") + httpRetCode );
 
   //Serial.printf("ret code [%d]\n", httpRetCode );
+  byte loopindex =0;
 
   String payload;
   if (httpRetCode == HTTP_CODE_OK) {
     //  payload = client.getString();
-    Serial.printf("getSunset payload");
+
+//    MQTTLogMessage("getSunriseSunset payload");
 
     // get lenght of document (is -1 when Server sends no Content-Length header)
     int len = http.getSize();
+//    MQTTLogMessage(String ("init len:") + len);
 
     // create buffer for read
     uint8_t buff[512] = {
@@ -246,20 +249,30 @@ void getSunriseSunset(String key, String city) {
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
 
+  
     // read all data from server
-    while (http.connected() && (len > 0 || len == -1)) {
+    while (http.connected() && (len > 0 || len == -1 || loopindex>100)) {
+//    while (http.connected() && (len > 0 || len == -1 )) {
+      loopindex++;
+      //while (http.connected() && len >= 0) {
+
+      //MQTTLogMessage(String ("len:")+ len);
+
       // get available data size
       size_t size = stream->available();
 
       if (size) {
         // read up to 128 byte
         int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+        MQTTLogMessage(String ("Processing bytes: ") + c);
 
         // write it to Serial
         //                        Serial.write(buff, c);
 
         String line = String((const char * ) buff);
         //Serial.printf("read line %s\n", line.c_str());
+        //MQTTLogMessage(line);
+
 
         int pos_sunset = line.indexOf("sunset");
         int pos_sunrise = line.indexOf("sunrise");
@@ -267,7 +280,7 @@ void getSunriseSunset(String key, String city) {
         if (pos_sunset > 0) {
           found_data = true;
 
-                    Serial.printf("Found data %s\n", line.c_str());
+          //                    Serial.printf("Found data %s\n", line.c_str());
           String sunset = line.substring(pos_sunset + 9, pos_sunset + 14);
           //          Serial.printf("sunset: [%s]\n", sunset.c_str());
           //          Serial.printf("sunset_hour: [%s]\n", sunset.substring(0, 2).c_str());
@@ -279,8 +292,8 @@ void getSunriseSunset(String key, String city) {
           //          Serial.printf("runtime.sunset_hour: [%d]\n", runtime.sunset_hour);
           //          Serial.printf("runtime.sunset_minute: [%d]\n", runtime.sunset_minute);
 
-          //MQTTLogMessage(String("Found sanset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
-          addAppLogMessage(String("Found sanset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
+          MQTTLogMessage(String("Found sunset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
+          addAppLogMessage(String("Found sunset in data ") + runtime.sunset_hour + ":" + runtime.sunset_minute);
 
         }
 
@@ -295,7 +308,7 @@ void getSunriseSunset(String key, String city) {
           runtime.sunrise_minute = atoi(sunrise.substring(3, 5).c_str());
           //          Serial.printf("runtime.sunrise_hour: [%d]\n", runtime.sunrise_hour);
           //          Serial.printf("runtime.sunrise_minute: [%d]\n", runtime.sunrise_minute);
-          //MQTTLogMessage(String("Found sunrise in data ") + runtime.sunrise_hour + ":" + runtime.sunrise_minute);
+          MQTTLogMessage(String("Found sunrise in data ") + runtime.sunrise_hour + ":" + runtime.sunrise_minute);
           addAppLogMessage(String("Found sunrise in data ") + runtime.sunrise_hour + ":" + runtime.sunrise_minute);
 
         }
@@ -303,8 +316,13 @@ void getSunriseSunset(String key, String city) {
         if (len > 0) {
           len -= c;
         }
-      }
-      delay(1);
+      }//      if (size) {
+
+
+      if (found_data == true) break;
+
+
+      //delay(1);
     } //
 
     if (found_data == true)
@@ -316,7 +334,7 @@ void getSunriseSunset(String key, String city) {
       runtime.sunset_update_time = NTP.getTimeDateString();
 
       if (conf.discoverable == true) sendUDPPing();
-
+  
     }
     //    Serial.printf("runtime.sunset_update_time %s\n", runtime.sunset_update_time.c_str());
     //    MQTTLogMessage("sunset_update_time " + runtime.sunset_update_time);
@@ -324,7 +342,12 @@ void getSunriseSunset(String key, String city) {
     //    Serial.println();
     //    Serial.print("[HTTP] connection closed or file end.\n");
 
-  } // if
+  } // if (httpRetCode == HTTP_CODE_OK)
+  else
+  {
+    MQTTLogMessage("NO HTTP_CODE_OK");
+
+  }
 
   /*
     DynamicJsonDocument jsonBuffer(conf.json_max_length);
@@ -345,6 +368,9 @@ void getSunriseSunset(String key, String city) {
     //payload.trim();
   */
   //  Serial.printf("getSunset end\n");
+  MQTTLogMessage(String("getSunriseSunset end ")+loopindex);
+  http.end();
+
 
 }
 
@@ -353,24 +379,24 @@ void generateToken() {
   //  runtime.token= "thisisSparta" ;
 
   const char *
-    const tokens[] = {
-      "0",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F"
-    };
+  const tokens[] = {
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  };
 
   randomSeed(millis());
 
@@ -540,14 +566,19 @@ void initWatchdog() {
 
 FirmwareVersionStruct getFirmwareVersionFromNet() {
 
+
+
+  WiFiClient wificlient;
   HTTPClient client;
 
-strcpy(conf.firmware_url,"http://itzone.pl/updateespmgr/");
+  strcpy(conf.firmware_url, "http://itzone.pl/updateespmgr/");
 
-char csrtmem[5];
-itoa((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0), csrtmem, 10);
-strcat(conf.firmware_url,csrtmem);
-strcat(conf.firmware_url,"MB/version.txt");
+
+  char csrtmem[5];
+  itoa((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0), csrtmem, 10);
+  strcat(conf.firmware_url, csrtmem);
+  strcat(conf.firmware_url, "MB/version.txt");
+
 
   //conf.firmware_url = String("http://itzone.pl/updateespmgr/4MB/version.txt");
 
@@ -560,17 +591,41 @@ strcat(conf.firmware_url,"MB/version.txt");
   //MQTTLogMessage(String("getFirmwareVersionFromNet : ")+conf.firmware_url );
   //MQTTLogMessage(String("getFirmwareVersionFromNet : ") + String((int)(ESP.getFlashChipRealSize() / 1024.0 / 1024.0)) + "MB");
 
-  client.begin(conf.firmware_url); //HTTP
+  boolean beginret = client.begin(wificlient, conf.firmware_url); //HTTP
 
-  //client.begin("http://api.apixu.com/v1/forecast.json?key=4fc4966df0e940bbb52171757172108&q=Warsaw");
+  FirmwareVersionStruct ret;
 
-//delay (2000);
+  //if (!beginret || !client.connected())
+  if (!beginret )
+  {
+    MQTTLogMessage("[HTTP} Unable to connect");
+    client.end();
+    return ret;
+
+  }
+
+
+  if (WiFi.status() != WL_CONNECTED) {
+    MQTTLogMessage("[HTTP} NOT onnected");
+    client.end();
+    return ret;
+
+  }
+
+  MQTTLogMessage(String("URL:") + conf.firmware_url);
+
+
+  //delay (2000);
   //MQTTLogMessage("After begin");
-//delay (2000);
+  //delay (2000);
+
+  //yield() ;
   int httpRetCode = client.GET();
 
- // MQTTLogMessage("After GET");
-  FirmwareVersionStruct ret;
+  // MQTTLogMessage("After GET");
+  MQTTLogMessage("Firmware conf loaded");
+
+
 
   //  Serial.printf("ret code [%d]\n", httpRetCode );
 
@@ -578,7 +633,7 @@ strcat(conf.firmware_url,"MB/version.txt");
     String payload = client.getString();
 
 
-    //    Serial.println(payload);
+    //Serial.println(payload);
 
     //payload.trim();
     //String version;
@@ -587,27 +642,35 @@ strcat(conf.firmware_url,"MB/version.txt");
 
 
 
+
     if (isValidJson(payload) == false) return ret;
 
     char inchars[payload.length() + 1];
     strcpy(inchars, payload.c_str());
 
+
     DynamicJsonDocument root(payload.length() + 1);
+
     deserializeJson(root, inchars);
+
     //JsonObject root = doc.to < JsonObject > ();
 
 
 
-//---------------------------    Tu dwa restarty i działa---------------------------
+    //---------------------------    Tu dwa restarty i działa---------------------------
 
 
     float firmware_version = root["firmware_version"];
+
     float spiffs_version = root["spiffs_version"];
+
     const char * firmware = root["firmware"];
+
     const char * spiffs = root["spiffs"];
 
 
-//---------------------------    Tu więcej restartów i działa---------------------------
+
+    //---------------------------    Tu więcej restartów i działa---------------------------
 
 
 
@@ -616,8 +679,10 @@ strcat(conf.firmware_url,"MB/version.txt");
     //    ret.firmware_version.trim();
     //    ret.spiffs_version.trim();
 
+
     ret.firmware = String(firmware);
     ret.spiffs = String(spiffs);
+
     ret.firmware.trim();
     ret.spiffs.trim();
 
@@ -633,10 +698,11 @@ strcat(conf.firmware_url,"MB/version.txt");
     //            Serial.printf("ret.firmware: [%s]\n", ret.firmware.c_str());
     //            Serial.printf("ret.spiffs: [%s]\n", ret.spiffs.c_str());
 
-
+    MQTTLogMessage("getFirmwareVersionFromNet END");
 
   } else {
-    Serial.printf("[HTTP GET failed: %s\n", client.errorToString(httpRetCode).c_str());
+    //    Serial.printf("[HTTP GET failed: %s\n", client.errorToString(httpRetCode).c_str());
+    MQTTLogMessage(String("HTTP GET failed:  ") + client.errorToString(httpRetCode).c_str());
   }
 
   client.end();
@@ -675,19 +741,19 @@ t_httpUpdate_return updateFirmwareFromUrl(String url, byte firmware_type) {
   } //else if (firmware_type==FIRMWARE_TYPE_FIRMWARE){
 
   switch (ret) {
-  case HTTP_UPDATE_FAILED:
-    MQTTLogMessage(String("HTTP_UPDATE_FAILD :") + ESPhttpUpdate.getLastErrorString().c_str());
+    case HTTP_UPDATE_FAILED:
+      MQTTLogMessage(String("HTTP_UPDATE_FAILD :") + ESPhttpUpdate.getLastErrorString().c_str());
 
-    //      Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-    break;
+      //      Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+      break;
 
-  case HTTP_UPDATE_NO_UPDATES:
-    //      Serial.println("HTTP_UPDATE_NO_UPDATES");
-    break;
+    case HTTP_UPDATE_NO_UPDATES:
+      //      Serial.println("HTTP_UPDATE_NO_UPDATES");
+      break;
 
-  case HTTP_UPDATE_OK:
-    //      Serial.println("HTTP_UPDATE_OK");
-    break;
+    case HTTP_UPDATE_OK:
+      //      Serial.println("HTTP_UPDATE_OK");
+      break;
   }
 
   return ret;
@@ -695,12 +761,16 @@ t_httpUpdate_return updateFirmwareFromUrl(String url, byte firmware_type) {
 }
 
 void updateFirmwareFromNet() {
+
+
   t_httpUpdate_return ret;
+
 
   //  Serial.printf("updateFirmwareFromNet\n");
   //  MQTTLogMessage(String ("updateFirmwareFromNet"));
 
   FirmwareVersionStruct firmwareVersionFromNet = getFirmwareVersionFromNet();
+
   //  Serial.printf("current firmware version :%s\n", conf.firmware_version.c_str());
   //  Serial.printf("current spiffs version :%s\n", conf.spiffs_version.c_str());
 
@@ -715,11 +785,15 @@ void updateFirmwareFromNet() {
   if (firmwareVersionFromNet.firmware_version <= conf.firmware_version && firmwareVersionFromNet.spiffs_version <= conf.spiffs_version)
 
   {
+
+
     //    Serial.println("No new version from net");
     //MQTTLogMessage(String("Firmware is up to date"));
 
     return;
   }
+
+
 
   //  Serial.println("updating data from net");
 
@@ -750,6 +824,8 @@ void updateFirmwareFromNet() {
 
   }
 
+
+
   // jesli rózna jest wersja spiffs
   //                if (!firmwareVersionFromNet.spiffs_version.equals(conf.spiffs_version) )
   if (firmwareVersionFromNet.spiffs_version > conf.spiffs_version) {
@@ -768,6 +844,7 @@ void updateFirmwareFromNet() {
     } //if(ret==HTTP_UPDATE_OK)
 
   }
+  MQTTLogMessage("updateFirmwareFromNet 4");
 
   reboot();
 
@@ -840,18 +917,18 @@ void processAPReboot() {
 }
 
 /*
-char * getConfigParam(char * paramName)
-{
+  char * getConfigParam(char * paramName)
+  {
 
-//  Serial.print("getConfigParam in ");
-//  Serial.println(paramName);
+  //  Serial.print("getConfigParam in ");
+  //  Serial.println(paramName);
 
   return "xxx";
 
-}
+  }
 */
 /*
-void writeEEPROM( String in)  {
+  void writeEEPROM( String in)  {
 
   Serial.println();
 
@@ -873,10 +950,10 @@ void writeEEPROM( String in)  {
 
   Serial.println();
 
-}
+  }
 */
 /*
-String readEEPROM( )  {
+  String readEEPROM( )  {
   //  Serial.println();
 
   Serial.println("readEEPROM");
@@ -898,7 +975,7 @@ String readEEPROM( )  {
   //Serial.printf("[%s][%d]",str.c_str(),str.length());
   //  Serial.println();
   return str;
-}
+  }
 */
 
 bool isValidJson(String in ) {
@@ -923,17 +1000,17 @@ bool isValidJson(String in ) {
 }
 
 /*
-JsonObject getJsonObjectFromString(String in)
-{
- char inchars[runtime.json_buffer_length];
+  JsonObject getJsonObjectFromString(String in)
+  {
+  char inchars[runtime.json_buffer_length];
   strcpy (inchars, in.c_str());
 
- DynamicJsonDocument jsonBuffer(conf.json_max_length);
+  DynamicJsonDocument jsonBuffer(conf.json_max_length);
     Serial.printf("getJsonObjectFromString\n[%s]\n",inchars );
- // json = jsonBuffer.parseObject(inchars);
-  
+  // json = jsonBuffer.parseObject(inchars);
+
   return &jsonBuffer.parseObject(inchars);
-}
+  }
 */
 
 bool loadConfigFromString(String in ) {
@@ -959,7 +1036,7 @@ bool loadConfigFromString(String in ) {
     return false;
   }
 
-  //JsonObject json = doc.to<JsonObject>();  
+  //JsonObject json = doc.to<JsonObject>();
 
   //  Serial.printf("loadConfigFromString len [%d]\n", measureJson(json));
 
@@ -1059,7 +1136,7 @@ bool loadConfigFromString(String in ) {
 
   //Serial.printf("\n\n\n\n----------------------- relays.size() %d \n\n\n\n\n",relays.size()  );
 
-  //Serial.printf("MQTTLogXXXXXXXXXXX [%s]\n",String(json["wifi_ssid"]).c_str()); 
+  //Serial.printf("MQTTLogXXXXXXXXXXX [%s]\n",String(json["wifi_ssid"]).c_str());
 
   // Serial.printf("json[\"wifi_ssid\"] %s\n",json["wifi_ssid"] );
 
@@ -1083,7 +1160,7 @@ bool loadConfigFromString(String in ) {
     conf.relays[i].domoticz_device_idx = relay["domoticz_device_idx"];
 
 
-//    Serial.printf("\n\n--load config Przeczytałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
+    //    Serial.printf("\n\n--load config Przeczytałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
 
 
     //delay(4000);
@@ -1198,15 +1275,15 @@ bool loadConfigFromString(String in ) {
   //const char * discoverable = json["discoverable"];
   if (json["discoverable"] != NULL) conf.discoverable = json["discoverable"];
 
-//  const char * network_update = json["network_update"];
-//  if (network_update != NULL) conf.network_update = json["network_update"];
+  //  const char * network_update = json["network_update"];
+  //  if (network_update != NULL) conf.network_update = json["network_update"];
   if (json["network_update"] != NULL) conf.network_update = json["network_update"];
-// if (strcmp(json["network_update"], "true")==0 ) conf.network_update = 1;
-//XXXXXXXXXXXXXXXXXXXXXXXXX
-//MQTTLogMessage(json["network_update"]);
-//MQTTLogMessage(String("network_update 2 ")+String(network_update) );
-//MQTTLogMessage(String("network_update 3 ")+String(conf.network_update) );
- 
+  // if (strcmp(json["network_update"], "true")==0 ) conf.network_update = 1;
+  //XXXXXXXXXXXXXXXXXXXXXXXXX
+  //MQTTLogMessage(json["network_update"]);
+  //MQTTLogMessage(String("network_update 2 ")+String(network_update) );
+  //MQTTLogMessage(String("network_update 3 ")+String(conf.network_update) );
+
 
 
   const char * MQTT_enable = json["MQTT_enable"];
@@ -1353,8 +1430,8 @@ bool saveConfig() {
     relay["relay_switch_pin"] = conf.relays[i].relay_switch_pin;
     relay["relay_state"] = conf.relays[i].relay_state;
 
-//    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
-//    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",relay["relay_state"] , i);
+    //    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",conf.relays[i].relay_state , i);
+    //    Serial.printf("\n\n--save config zapisałem relay state = %d na indeksie %d \n\n",relay["relay_state"] , i);
 
     relay["relay_led_pin"] = conf.relays[i].relay_led_pin;
     relay["relay_led_conn_type"] = conf.relays[i].relay_led_conn_type;
@@ -1561,12 +1638,12 @@ String scanNetworks() {
       else auth = "*";
 
       ret = ret + "{" +
-        "\"name\":\"" + WiFi.SSID(i) + "\"," +
-        "\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"," +
-        "\"channel\":\"" + WiFi.channel(i) + "\"," +
-        "\"encryptionType\":\"" + auth + "\"," +
-        "\"rssi\":\"" + WiFi.RSSI(i) + "\"" +
-        "}";
+            "\"name\":\"" + WiFi.SSID(i) + "\"," +
+            "\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"," +
+            "\"channel\":\"" + WiFi.channel(i) + "\"," +
+            "\"encryptionType\":\"" + auth + "\"," +
+            "\"rssi\":\"" + WiFi.RSSI(i) + "\"" +
+            "}";
 
       //    ssids[i].SSID=WiFi.SSID(i);
 
@@ -1574,15 +1651,15 @@ String scanNetworks() {
 
       // Print SSID and RSSI for each network found
       /*
-      Serial.print(i + 1);
-      Serial.print(": ");
-      Serial.print(WiFi.SSID(i));
-      Serial.print("  ");
-      Serial.print(WiFi.BSSIDstr(i));
-      Serial.print(" (");
-      Serial.print(WiFi.RSSI(i));
-      Serial.print(")");
-      Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
+        Serial.print(i + 1);
+        Serial.print(": ");
+        Serial.print(WiFi.SSID(i));
+        Serial.print("  ");
+        Serial.print(WiFi.BSSIDstr(i));
+        Serial.print(" (");
+        Serial.print(WiFi.RSSI(i));
+        Serial.print(")");
+        Serial.println((WiFi.encryptionType(i) == ENC_TYPE_NONE) ? " " : "*");
       */
       //      delay(10);
     }
@@ -1622,7 +1699,8 @@ void processOTA() {
 */
 void initOTA() {
 
-  Serial.printf("initOTA\n");
+
+  MQTTLogMessage("initOTA");
 
   static int last_percent_prograss;
 

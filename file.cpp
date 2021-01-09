@@ -1,5 +1,5 @@
 #include <ESP8266WebServer.h>
-
+#include <ESP8266HTTPClient.h>
 #include "FS.h"
 
 #include "util.h"
@@ -11,7 +11,7 @@
 #define HTTP_DOWNLOAD_UNIT_SIZE 1460
 
 void prepareHeader(int code,
-  const char * content_type, size_t contentLength) {
+                   const char * content_type, size_t contentLength) {
 
   String response;
 
@@ -47,6 +47,76 @@ void prepareHeader(int code,
   httpServer.sendContent("\r\n");
 
 }
+
+
+/*
+int getWebFileSize(char * path) {
+
+  MQTTLogMessage(String("getWebFileSize ") + path);
+
+  int size = 0;
+
+
+  HTTPClient http; //must be declared after WiFiClient for correct destruction order, because used by http.begin(client,...)
+
+  MQTTLogMessage("[HTTP] begin...");
+  // configure server and url
+  http.begin(String("http://itzone.com.pl/updateespmgr/data") + path);
+
+
+  MQTTLogMessage("[HTTP] GET...");
+  int httpCode = http.GET();
+
+  if (httpCode != HTTP_CODE_OK) {
+    MQTTLogMessage("[HTTP] NO HTTP_CODE_OK...");
+    return -1;
+  }
+
+
+
+ int len = http.getSize();
+
+     // create buffer for read
+        uint8_t buff[512] = { 0 };
+
+
+  // get tcp stream
+        //WiFiClient * stream = &client;
+        WiFiClient * stream = http.getStreamPtr();
+
+        // read all data from server
+        while (http.connected() && (len > 0 || len == -1)) {
+          // read up to 128 byte
+          int c = stream->readBytes(buff, std::min((size_t)len, sizeof(buff)));
+          size=size+c;
+          //Serial.printf("readBytes: %d\n", c);
+          if (!c) {
+            Serial.println("read timeout");
+          }
+
+          // write it to Serial
+          //Serial.write(buff, c);
+
+          if (len > 0) {
+            len -= c;
+          }
+        }
+
+
+
+
+//  MQTTLogMessage(String ("[HTTP] size...") + len);
+  MQTTLogMessage(String ("[HTTP] size...") + size);
+
+
+
+  http.end();
+
+
+  return len;
+}
+
+*/
 
 int getFileSize(char * path) {
 
@@ -190,11 +260,11 @@ int readFullFile(char * path, String & content) {
 
 }
 /*
-int readFullFile(char *path, char *data)
-{
+  int readFullFile(char *path, char *data)
+  {
 
 
-File f =SPIFFS.open(path, "r");
+  File f =SPIFFS.open(path, "r");
 
   if (!f) {
     Serial.println("Failed to open file ");
@@ -203,28 +273,28 @@ File f =SPIFFS.open(path, "r");
     return -2;
   }
 
-Serial.printf("Reading %s, size  %u\n",path, f.size());
+  Serial.printf("Reading %s, size  %u\n",path, f.size());
 
-int index=0;
+  int index=0;
 
-//data= (char *)malloc(sizeof(char)*f.size()+1);
+  //data= (char *)malloc(sizeof(char)*f.size()+1);
 
-//f.read((uint8_t*)content,f.size() );
+  //f.read((uint8_t*)content,f.size() );
 
-while (f.available()) 
-{
+  while (f.available())
+  {
     data[index]=f.read();
     index++;
-}
+  }
 
     data[index]='\0';
 
-//Serial.printf("%s\n",content);
+  //Serial.printf("%s\n",content);
 
     f.close();
 
-return 0;
-}
+  return 0;
+  }
 */
 bool saveFile(String path, String indata) {
 

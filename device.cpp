@@ -24,6 +24,7 @@ Button switchs[2]; // Connect your button between pin 2 and GND
 //byte current_hour_for_led=-1;
 
 void processRelayLed(int index) {
+//  return;
   /*
   String datetime=NTP.getTimeDateString();
 
@@ -40,9 +41,11 @@ void processRelayLed(int index) {
   if (conf.relays[index].relay_state==1) return;
   */
 
+  MQTTLogMessage(String(F("processRelayLed ")) + index);
+
   if (conf.relays[index].relay_led_pin < 0) return;
 
-  if (conf.relays[index].relay_state == 1) return;
+//  if (conf.relays[index].relay_state == 1) return;
 
   byte current_hour_for_led = timer1.getCurrentHour();
 
@@ -53,13 +56,25 @@ void processRelayLed(int index) {
 
     setLedState(index, 0);
 
-  } //if (current_hour_for_led>=23 ||current_hour_for_led<=17 && conf.relays[index].relay_state==0) 
-  else setLedState(index, 1);
+ } //if (current_hour_for_led>=23 ||current_hour_for_led<=17 && conf.relays[index].relay_state==0) 
+  else 
+  
+  
+  {
+    //setLedState(index, conf.relays[index].relay_state);
+  //    if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_ON) setLedState(index, instate);
+  //    else if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_OFF) setLedState(index, !instate);
+
+  }
+  
+  MQTTLogMessage(String(F("processRelayLed END ")) + index);
 
 }
 
 // 1 on , 0 off
 void setLedState(int index, byte state) {
+
+ MQTTLogMessage(String("setLedState ") + index +"/"+state);
 
   if (conf.relays[index].relay_led_pin < 0) return;
 
@@ -127,7 +142,11 @@ void InterruptSwitch(int index) {
 
   //  int pin_state = digitalRead(conf.button_pin);
 
-  setRelayStatePermanently(index, !conf.relays[index].relay_state);
+  //setRelayStatePermanently(index, !conf.relays[index].relay_state);
+    conf.relays[index].relay_state = !conf.relays[index].relay_state;
+
+    setRelayState(index, conf.relays[index].relay_state);
+
 
 }
 
@@ -137,7 +156,7 @@ void processSwitchInterrupt(int index) {
   if (conf.relays[index].relay_switch_pressed == true) {
    conf.relays[index].relay_switch_pressed = false;
  
-    //MQTTLogMessage(String("Relay switch pressed index ") + index );
+    MQTTLogMessage(String("Relay switch pressed index ") + index );
     //MQTTLogMessage(String("Relay state ") + conf.relays[index].relay_state );
 
     debounceInterruptBackend(index);
@@ -188,7 +207,11 @@ void debounceInterruptBackend(int index) {
 void ICACHE_RAM_ATTR  debounceInterrupt0() {
 
   if (abs((long)(micros() - last_micros[0])) >= debouncing_time * 1000) {
-    //Serial.printf("debounceInterrupt0 START\n" );
+    
+//    Serial.printf("debounceInterrupt0 START\n" );
+//    Serial.printf("micros() [%d] last_micros[0][%d] micros() - last_micros[0][%d]",micros(), last_micros[0], (micros() - last_micros[0]) );
+    
+    
     conf.serialLogging = false;
     conf.interruptProcess = true;
 
@@ -295,7 +318,7 @@ void initLed(int index) {
   if (conf.relays[index].relay_led_pin < 0) return;
 
   //Serial.printf("initLed [led_pin=%d]\n",conf.relays[index].relay_led_pin);
-  //MQTTLogMessage(String("initLed [led_pin=") + conf.relays[index].relay_led_pin + "]");
+  MQTTLogMessage(String("initLed [led_pin=") + conf.relays[index].relay_led_pin + "]");
 
   pinMode(conf.relays[index].relay_led_pin, OUTPUT);
 }

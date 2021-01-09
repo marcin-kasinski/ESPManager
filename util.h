@@ -184,7 +184,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 14.00;
+float firmware_version = 15.27;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
@@ -258,6 +258,8 @@ String pingtopic="itzone/ping";
 
 float temperature;
 String temperature_measure_time;
+
+boolean getSunriseSunsetRequest=false;
 
 char ip[16] = {0};
 byte runtime_mode=-2000;
