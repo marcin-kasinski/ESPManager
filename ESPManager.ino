@@ -1,4 +1,4 @@
-\
+
 //void ICACHE_RAM_ATTR handleInterrupt();
 
 #include <NtpClientLib.h>
@@ -127,10 +127,12 @@ void setup() {
   timer1.begin();
 
 
+if (conf.security_enable== true)
+{
   generateToken();
 
   timer1.addTask("SYSTEM", -1, "Generate App token", "15", "Every 2", "*", "*", "*");
-
+}
 
   if (conf.network_update == true) {
 

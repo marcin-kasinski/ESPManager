@@ -40,8 +40,9 @@
 	<div class="pull-right">
 	
       <span id="xhr_poll_status" >
-       <span class="label success">Firmware version:</span><span class="label success" id="firmware_version"></span>
+       <span class="label success">Firmware version:</span><span class="label success" id="firmware_version"></span> <span class="label success">Spiffs version:</span><span class="label success" id="spiffs_version"></span>
       </span>
+
      </div>
 	
     </div>

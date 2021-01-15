@@ -731,6 +731,7 @@ else if (value=="dhcp") updateDivFromFile("container.network.lan.general", "prot
 	
 	<script type="text/javascript">
 
+	addDivCheckBox('container.network.lan.advanced','Enable security','adv-security_enable','adv.security_enable') ;
 	addDivCheckBox('container.network.lan.advanced','Enable OTA','adv-OTA_enable','adv.OTA_enable') ;
 	addDivCheckBox('container.network.lan.advanced','Set discoverable','adv-discoverable','adv.discoverable') ;
 	addDivCheckBox('container.network.lan.advanced','Firmware update over network','adv-network_update','adv.network_update') ;

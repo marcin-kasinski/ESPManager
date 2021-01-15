@@ -25,9 +25,12 @@ PubSubClient mqttclient(espClient);
 
 bool MQTTpublish(String topic, String message) {
 
+//Serial.printf("MQTTpublish1 [%s] conf.MQTT_enable [%d]\n", message.c_str(), conf.MQTT_enable );
   if (!WiFi.isConnected() || conf.MQTT_enable == false) return true;
 
-  if (conf.interruptProcess == false) mqttclient.publish(topic.c_str(), message.c_str());
+  //if (conf.interruptProcess == false) 
+  mqttclient.publish(topic.c_str(), message.c_str());
+//Serial.printf("MQTTpublish2 [%s]\n", message.c_str());
 
   return true;
 }
@@ -44,8 +47,8 @@ bool MQTTLogMessage(String message)
 {
   if (conf.interruptProcess == false) Serial.printf("MQTTLog [%s]\n", message.c_str());
   //Serial.printf("MQTTLog [%s]\n",message); 
-  return true;
-  //  return MQTTpublish("itzone/device/"+conf.hostName+"/log", NTP.getTimeDateString()+":"+message);
+  //return true;
+  return MQTTpublish("itzone/device/"+conf.hostName+"/log", NTP.getTimeDateString()+":"+message);
 }
 
 bool getDevices(String url) {
@@ -220,7 +223,7 @@ void callback(char * topic, byte * payload, unsigned int length) {
 }
 
 void initMQTT() {
-  Serial.printf("initMQTT\n");
+  MQTTLogMessage("initMQTT");
 
   mqttclient.setServer(conf.MQTT_hostName.c_str(), 1883);
   mqttclient.setCallback(callback);
@@ -253,7 +256,7 @@ void MQTTProcess() {
 
 void MQTTConnect() {
 
-  Serial.printf("MQTT connecting\n");
+  MQTTLogMessage("MQTT connecting");
   //    Serial.printf(".");
 
   int mqttconnected = mqttclient.connect(conf.hostName.c_str());

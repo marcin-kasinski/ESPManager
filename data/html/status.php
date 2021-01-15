@@ -6,7 +6,7 @@
 	<table width="100%" cellspacing="10">
 		<tbody><tr><td width="33%">Hostname</td><td id="hostname"></td></tr>
 		<tr><td width="33%">Model</td><td>ESP</td></tr>
-		<tr><td width="33%">Firmware Version</td><td><text id="firmware_version2"></text> ( spiffs version: <text id="spiffs_version"></text> )</td></tr>
+		<tr><td width="33%">Firmware Version</td><td><text id="firmware_version2"></text> ( spiffs version: <text id="spiffs_version2"></text> )</td></tr>
 		<tr><td width="33%">Local Time</td><td id="localtime"></td></tr>
 		<tr><td width="33%">Uptime</td><td id="uptime"></td></tr>		
 		<tr><td width="33%">Sunrise / Sunset</td><td><text id="sunrise"></text> / <text id="sunset"></text> ( update time: <text id="sunset_update_time"></text> )</td></tr>
@@ -298,6 +298,7 @@ updateMemory();
 updateMemorySPIFFS();
 
 setValue("firmware_version2",getRuntimeValueByKey('firmware_version'));
+setValue("spiffs_version2",getRuntimeValueByKey('spiffs_version'));
 setValue("hostname2",getRuntimeValueByKey('hostname'));
 
 

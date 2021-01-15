@@ -469,6 +469,8 @@ void handleJSONRuntimeInfo() {
 
     //    content=content+"{"+"\"n\":\"freemem\","+"\"v\":\""+ESP.getFreeSketchSpace()+"\""+    ",\"h\":\"\"},\n";
 
+    contentCONF_Advanced = contentCONF_Advanced + "{" + "\"n\":\"adv.security_enable\"," + "\"v\":\"" + conf.security_enable + "\"" + ",\"h\":\"\"},\n";
+    contentCONF_Advanced = contentCONF_Advanced + "{" + "\"n\":\"adv.security_enable_checkbox\"," + "\"v\":\"" + conf.security_enable + "\"" + ",\"h\":\"\"},\n";
     contentCONF_Advanced = contentCONF_Advanced + "{" + "\"n\":\"adv.OTA_enable\"," + "\"v\":\"" + conf.OTA_enable + "\"" + ",\"h\":\"\"},\n";
     contentCONF_Advanced = contentCONF_Advanced + "{" + "\"n\":\"adv.OTA_enable_checkbox\"," + "\"v\":\"" + conf.OTA_enable + "\"" + ",\"h\":\"\"},\n";
     contentCONF_Advanced = contentCONF_Advanced + "{" + "\"n\":\"adv.discoverable\"," + "\"v\":\"" + conf.discoverable + "\"" + ",\"h\":\"\"},\n";
@@ -603,6 +605,9 @@ void handleJSONListWifiNetworks() {
 bool processAuth() {
   //    Serial.printf("processAuth \n");
 
+  if (conf.security_enable== false) return true;
+
+
   if (!is_authentified()) {
     httpServer.sendHeader("Location", "/login");
     httpServer.sendHeader("Cache-Control", "no-cache");
@@ -706,6 +711,9 @@ void handleSaveConf() {
 
   if (httpServer.hasArg("mqtt.MQTT_enable") && httpServer.arg("mqtt.MQTT_enable").equals("true")) conf.MQTT_enable = true;
   else if (httpServer.hasArg("mqtt.MQTT_enable") && httpServer.arg("mqtt.MQTT_enable").equals("false")) conf.MQTT_enable = false;
+
+  if (httpServer.hasArg("adv.security_enable") && httpServer.arg("adv.security_enable").equals("true")) conf.security_enable = true;
+  else if (httpServer.hasArg("adv.security_enable") && httpServer.arg("adv.security_enable").equals("false")) conf.security_enable = false;
 
   if (httpServer.hasArg("adv.OTA_enable") && httpServer.arg("adv.OTA_enable").equals("true")) conf.OTA_enable = true;
   else if (httpServer.hasArg("adv.OTA_enable") && httpServer.arg("adv.OTA_enable").equals("false")) conf.OTA_enable = false;

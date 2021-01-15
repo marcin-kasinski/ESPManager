@@ -211,7 +211,7 @@ boolean setWIFIClient() {
 //  Serial.println(WiFi.localIP());
 
 
-      MQTTLogMessage(String("localIP: : ") + WiFi.localIP().toString() );
+      MQTTLogMessage(String("localIP: ") + WiFi.localIP().toString() );
 
   
   runtime.mac_STA = WiFi.macAddress();

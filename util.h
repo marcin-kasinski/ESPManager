@@ -184,7 +184,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 15.27;
+float firmware_version = 15.28;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
@@ -209,6 +209,7 @@ unsigned int ntpUDPLocalPort = 2390;      // local port to listen for UDP packet
 String ntpserver;
 
 String OTA_password="admin76";
+boolean security_enable=true;
 boolean OTA_enable=false;
 boolean discoverable=false;
 
@@ -252,7 +253,7 @@ byte sunset_hour;
 byte sunrise_minute;
 byte sunrise_hour;
 byte curr_month;
-String token;
+String token="1";
 
 String pingtopic="itzone/ping";
 

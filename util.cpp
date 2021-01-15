@@ -264,7 +264,7 @@ void getSunriseSunset(String key, String city) {
       if (size) {
         // read up to 128 byte
         int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
-        MQTTLogMessage(String ("Processing bytes: ") + c);
+        //MQTTLogMessage(String ("Processing bytes: ") + c);
 
         // write it to Serial
         //                        Serial.write(buff, c);
@@ -1014,8 +1014,8 @@ bool isValidJson(String in ) {
 */
 
 bool loadConfigFromString(String in ) {
-
-  //    Serial.printf("loadConfigFromString...size [%d]\n", in.length());
+  
+  //Serial.printf("loadConfigFromString... [%s]\n", in.c_str());
 
   if (isValidJson( in ) == false) return false;
 
@@ -1270,6 +1270,19 @@ bool loadConfigFromString(String in ) {
   if (OTA_password != NULL) conf.OTA_password = OTA_password;
 
   //const char * OTA_enable = json["OTA_enable"];
+
+
+  //if (json["security_enable"] != NULL) 
+  conf.security_enable= json["security_enable"];
+
+  //if (json["security_enable"] != NULL) conf.security_enable = json["security_enable"];
+
+  //if (json["security_enable"] != NULL)  Serial.printf("json[security_enable]  \n");
+
+  
+  //MQTTLogMessage(String("conf.security_enable loaded ")+String(conf.security_enable) );
+  
+  
   if (json["OTA_enable"] != NULL) conf.OTA_enable = json["OTA_enable"];
 
   //const char * discoverable = json["discoverable"];
@@ -1288,7 +1301,9 @@ bool loadConfigFromString(String in ) {
 
   const char * MQTT_enable = json["MQTT_enable"];
 
-  if (MQTT_enable != NULL) conf.MQTT_enable = json["MQTT_enable"];
+  if (json["MQTT_enable"] != NULL) conf.MQTT_enable= json["MQTT_enable"];
+//  MQTTLogMessage(String("MQTT_enable ")+String(conf.MQTT_enable) );
+
 
   const char * MQTT_hostName = json["MQTT_hostName"];
   if (MQTT_hostName != NULL) conf.MQTT_hostName = MQTT_hostName;
@@ -1476,6 +1491,12 @@ bool saveConfig() {
   json["ntpserver"] = conf.ntpserver;
 
   json["OTA_password"] = conf.OTA_password;
+
+  
+  json["security_enable"] = conf.security_enable;
+
+    //MQTTLogMessage(String("conf.security_enable ")+String(conf.security_enable) );
+
   json["OTA_enable"] = conf.OTA_enable;
 
   json["discoverable"] = conf.discoverable;
@@ -1532,11 +1553,13 @@ bool saveConfig() {
   //  char data[1500];
   //  json.printTo(data,1500);
 
-  //  MQTTLogMessage(String("Data ")+String(data) );
+//    MQTTLogMessage(String("Data ")+str );
 
   //    Serial.printf("Saving \n%s\n",str.c_str());
 
   //SPIFFS.remove(CONF_FILE );
+
+    //MQTTLogMessage(String("saving")+str );
 
   bool savefileret = saveFile(CONF_FILE, str);
 
