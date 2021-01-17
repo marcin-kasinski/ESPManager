@@ -206,12 +206,21 @@ row.outerHTML=html;
 			<th class="cbi-section-table-cell">Firmware version</th>
 			<th class="cbi-section-table-cell">Uptime</th>
 			<th class="cbi-section-table-cell">Last seen</th>
+			<th class="cbi-section-table-cell">Action</th>
 		</tr>
 			
 	</table>
 </fieldset>
 	
 			<script>
+
+
+function deleteDevice(index)
+{
+//alert('XXXXX');
+//processAjaxRequest('other_devices_table', '/handleJSONListOtherDevices',processAjaxListOtherDevices);			
+processAjaxRequest('other_devices_table', '/deleteotherespdevice?index='+index+'&token='+token,processAjaxListOtherDevices);
+}
 
 
 function processAjaxListOtherDevices(divid, file, injson) 
@@ -224,16 +233,40 @@ function processAjaxListOtherDevices(divid, file, injson)
         alert(e); // error in the above string (in this case, yes)!
     }						
 
-		
-	
+			
 		var size = obj.MDNSDevices.length; 
 	
 		var table=document.getElementById(divid);
 
+		// najpierw usuwa rekordy 
+		var tabsize=table.rows.length;
+
+		for (i = 1; i < tabsize; i++) table.deleteRow(1);
+
 		for (i = 0; i < size; i++) 
 		{
+			
+
+			spiffs_version_string="";
+			
+			
+			if (typeof obj.MDNSDevices[i].spiffs_version != "undefined")
+			
+			{
+			
+			spiffs_version_string=' (<small style="color:#f38d45"> '+obj.MDNSDevices[i].spiffs_version.trim()+' </small>)';
+
+			}
+			///////////			
+			
 			var row = table.insertRow(i+1);	
-			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1"><td><a href="http://'+obj.MDNSDevices[i].IP.trim()+'">'+obj.MDNSDevices[i].hostname.trim()+'</a></td><td>'+obj.MDNSDevices[i].IP.trim()+'</td><td>'+obj.MDNSDevices[i].firmware_version.trim()+'</td><td>'+obj.MDNSDevices[i].uptime.trim()+'</td><td>'+obj.MDNSDevices[i].timestamp.trim()+'</td></tr>';						
+			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1"><td><a href="http://'+obj.MDNSDevices[i].IP.trim()+'">'+obj.MDNSDevices[i].hostname.trim()+'</a></td><td>'+obj.MDNSDevices[i].IP.trim()+'</td><td>'+
+			obj.MDNSDevices[i].firmware_version.trim()+
+			
+			spiffs_version_string+'</td><td>'+obj.MDNSDevices[i].uptime.trim()+'</td><td>'+obj.MDNSDevices[i].timestamp.trim()+'</td><td style="width:40px">'+
+//'<img src="img/edit.gif" title="Edit this device ('+i+')" value="Edit" onclick="editTask('+i+'); return false;"> '+
+'<img src="img/remove.gif" title="Delete this device ('+i+')" value="Delete" onclick="deleteDevice('+i+'); return false;">'+
+'</td></tr>';						
 			
 			}	
 	

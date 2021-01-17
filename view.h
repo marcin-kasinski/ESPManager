@@ -16,6 +16,7 @@ void handleReboot() ;
 void handleRebootASK() ;
 void handleJSONListWifiNetworks();
 void handleJSONRuntimeInfo();
+void handleDeleteOtherEspDevice();
 void handleJSONListOtherDevices();
 void handleConfUpload();
 

@@ -179,7 +179,7 @@ boolean setWIFIClient() {
     WiFi.begin(conf.wifi_ssid.c_str(), conf.wifi_password.c_str());
 
     if (WiFi.waitForConnectResult() == WL_CONNECTED) {
-      runtime.runtime_mode = RUNTIME_MODE_OK;
+      //runtime.runtime_mode = RUNTIME_MODE_OK;
 
       break;
     }
@@ -198,7 +198,7 @@ boolean setWIFIClient() {
 
   // jeśli nie połącz
   if (reconnect_count == conf.WIFI_STA_RECCONECT_COUNT) {
-    runtime.runtime_mode = RUNTIME_MODE_WIFI_PROBLEM;
+    //runtime.runtime_mode = RUNTIME_MODE_WIFI_PROBLEM;
 
     return false;
   }

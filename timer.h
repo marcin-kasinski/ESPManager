@@ -3,10 +3,6 @@
 #include <LinkedList.h>
 #include <functional>
 
-typedef std::function<void(byte)> THandlerFunction_Callback;
-
-
-
 const char * const WEEKDAYS[] =
 {
     "MON",
@@ -46,11 +42,16 @@ struct CronObject {
   String weekday_logical="*";
 
   byte device_id;
+  byte xxx;
   String function_name;
+  String function_name_parameter;
 
-  THandlerFunction_Callback fn_Callback;
+  //THandlerFunction_Callback fn_Callback;
 
 };
+
+typedef std::function<void(CronObject)> THandlerFunction_Callback;
+
 
 class ITZoneTimer
 {
@@ -74,7 +75,7 @@ class ITZoneTimer
     byte getCurrentMonth();
     int getCurrentYear();
 //    void setRunTime(byte index, byte hour, byte min,THandlerFunction_Callback fn);
-    void addTask(String type,byte device_id , String function_name, String minute , String  hour , String  day , String  month , String weekday);
+    void addTask(String type,byte device_id , String function_name, String function_name_parameter, String minute , String  hour , String  day , String  month , String weekday);
 
 //  TimerOBject timerObjects[10];
   LinkedList<CronObject> cronObjects = LinkedList<CronObject>();

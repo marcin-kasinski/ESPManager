@@ -62,7 +62,10 @@ void sendUDPMessage(String messagetype) {
 
   message = message + "{\"runtime\" : {\n";
 
-  message = message + "\"messagetype\":\"" + messagetype.c_str() + "\",\"hostName\":\"" + conf.hostName + "\"" + ",\"ip\":\"" + WiFi.localIP().toString() + "\"" + ",\"firmware_version\":\"" + conf.firmware_version + "\"" + ",\"timestamp\":\"" + NTP.getTimeDateString() + "\"" + ",\"sunset_update_time\":\"" + runtime.sunset_update_time + "\"" + ",\"sunset\":\"" + getHourString(runtime.sunset_hour, runtime.sunset_minute) + "\"" + ",\"sunrise\":\"" + getHourString(runtime.sunrise_hour, runtime.sunrise_minute) + "\"" + ",\"uptime\":\"" + NTP.getUptimeString() + "\"\n";
+  message = message + "\"messagetype\":\"" + messagetype.c_str() + "\",\"hostName\":\"" + conf.hostName + "\"" + ",\"ip\":\"" + WiFi.localIP().toString() + "\"" + 
+  ",\"firmware_version\":\"" + conf.firmware_version + "\"" + 
+  ",\"spiffs_version\":\"" + conf.spiffs_version + "\"" + 
+  ",\"timestamp\":\"" + NTP.getTimeDateString() + "\"" + ",\"sunset_update_time\":\"" + runtime.sunset_update_time + "\"" + ",\"sunset\":\"" + getHourString(runtime.sunset_hour, runtime.sunset_minute) + "\"" + ",\"sunrise\":\"" + getHourString(runtime.sunrise_hour, runtime.sunrise_minute) + "\"" + ",\"uptime\":\"" + NTP.getUptimeString() + "\"\n";
 
   message = message + String(" }}");
 
@@ -187,6 +190,7 @@ void processUDPMQTTCallback() {
 
     const char * ip_char = runtime["ip"];
     const char * firmware_version_char = runtime["firmware_version"];
+    const char * spiffs_version_char = runtime["spiffs_version"];
     const char * uptime_char = runtime["uptime"];
 
     String sunset_from_packet = String("");
@@ -287,6 +291,8 @@ void processUDPMQTTCallback() {
       strcpy(MDNSObjectUDP.hostName, hostName_char);
       strcpy(MDNSObjectUDP.ip, ip_char);
       strcpy(MDNSObjectUDP.firmware_version, firmware_version_char);
+      if (spiffs_version_char!=NULL) strcpy(MDNSObjectUDP.spiffs_version, spiffs_version_char);
+      else strcpy(MDNSObjectUDP.spiffs_version, "");
       strcpy(MDNSObjectUDP.timestamp, NTP.getTimeDateString().c_str());
       strcpy(MDNSObjectUDP.uptime, uptime_char);
 
@@ -431,13 +437,19 @@ String getDNSDevices() {
 
   for (int i = 0; i < size; ++i) {
 
+
+
     MDNSObject MDNSObjecti = MDNSObjects.get(i);
 
     //    MDNSTxt mdnsTxt=
 
     if (i > 0) content = content + ",";
 
-    content = content + "{" + "\"hostname\":\"" + MDNSObjecti.hostName + "\"," + "\"IP\":\"" + MDNSObjecti.ip + "\"" + ",\"firmware_version\":\"" + MDNSObjecti.firmware_version + "\",\"uptime\":\"" + MDNSObjecti.uptime + "\",\"timestamp\":\"" + MDNSObjecti.timestamp + "\"}\n";
+    content = content + "{" + "\"hostname\":\"" + MDNSObjecti.hostName + "\"," + "\"IP\":\"" + MDNSObjecti.ip + "\"" + 
+    ",\"firmware_version\":\"" + MDNSObjecti.firmware_version + "\""+
+    ",\"spiffs_version\":\"" + MDNSObjecti.spiffs_version + "\""+
+    
+    "  ,\"uptime\":\"" + MDNSObjecti.uptime + "\",\"timestamp\":\"" + MDNSObjecti.timestamp + "\"}\n";
 
     /*
           Serial.print(i + 1);

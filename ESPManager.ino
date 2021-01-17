@@ -55,9 +55,6 @@ void setup() {
   SPIFFS.begin();
   bool processConfigret = processConfig();
 
-  if (conf.OTA_enable == true) initOTA();
-  if (conf.MQTT_enable == true) initMQTT();
-
   initDevices();
 
   WiFi.hostname(conf.hostName);
@@ -68,6 +65,10 @@ void setup() {
 
   //if (processConfigret==true) 
   retsetWIFIClient = setWIFIClient();
+
+  if (conf.OTA_enable == true) initOTA();
+  if (conf.MQTT_enable == true) initMQTT();
+
 
   //Serial.printf("retsetWIFIClient [%d]",retsetWIFIClient); 
 
@@ -83,6 +84,7 @@ void setup() {
   httpServer.on("/logs", handleLogs);
   httpServer.on("/addtask", handleAddTask);
   httpServer.on("/deletetask", handleDeleteTask);
+  httpServer.on("/deleteotherespdevice", handleDeleteOtherEspDevice);
 
   httpServer.on("/rebootask", handleRebootASK);
   httpServer.on("/listwifinetworks", handleJSONListWifiNetworks);
@@ -96,12 +98,13 @@ void setup() {
   httpServer.on("/factoryReset", handleFactoryReset);
 
   httpServer.on("/handleJSONSwitchChange", handleJSONSwitchChange);
-//  httpServer.on("/restAPI", handleRestAPI);
+
 
   httpServer.on("/firmware", HTTP_GET, handleFirmwareGet);
   httpServer.on("/firmware", HTTP_POST, handleFirmwarePostAfterFinished, handleFirmwarePost);
-  httpServer.on("/confupload", HTTP_POST, handleConfUploadAfterFinished, handleConfUpload);
   httpServer.on("/firmwareSPIFFS", HTTP_POST, handleFirmwarePostAfterFinished, handleFirmwarePost);
+  httpServer.on("/confupload", HTTP_POST, handleConfUploadAfterFinished, handleConfUpload);
+
 
   httpServer.on("/login", handleLogin);
   httpServer.onNotFound(handleNotFound); //called when handler is not assigned
@@ -131,13 +134,13 @@ if (conf.security_enable== true)
 {
   generateToken();
 
-  timer1.addTask("SYSTEM", -1, "Generate App token", "15", "Every 2", "*", "*", "*");
+  timer1.addTask("SYSTEM", -1, "Generate App token","", "15", "Every 2", "*", "*", "*");
 }
 
   if (conf.network_update == true) {
 
 
-    timer1.addTask("SYSTEM", -1, "Firmware update check", "0", "4", "*", "*", "*");
+    timer1.addTask("SYSTEM", -1, "Firmware update check","", "0", "4", "*", "*", "*");
 
 
     updateFirmwareFromNet();
@@ -145,23 +148,23 @@ if (conf.security_enable== true)
 
 
 
-  if (conf.relays[0].relay_led_pin >= 0) timer1.addTask("SYSTEM", 0, "Process relay led", "0", "*", "*", "*", "*");
-  if (conf.relays[1].relay_led_pin >= 0) timer1.addTask("SYSTEM", 1, "Process relay led", "1", "*", "*", "*", "*");
+  if (conf.relays[0].relay_led_pin >= 0) timer1.addTask("SYSTEM", 0, "Process relay led","", "0", "*", "*", "*", "*");
+  if (conf.relays[1].relay_led_pin >= 0) timer1.addTask("SYSTEM", 1, "Process relay led","", "1", "*", "*", "*", "*");
 
   //timer1.addTask("SYSTEM",1,"XXX","Random 1/10/4","Random 1/10/4", "Random 1/10/4", "Random 1/10/4","*");
   //timer1.addTask("SYSTEM",1,"XXX","Every 10","Random 1/10/4", "*", "*","*");
 
   if (conf.temperatureSensor_tempsensor_pin >= 0) {
     //  processTemp();
-    timer1.addTask("SYSTEM", -1, "Update temperature", "Every 10", "*", "", "*", "*");
+    timer1.addTask("SYSTEM", -1, "Update temperature","", "Every 10", "*", "", "*", "*");
 
   }
 
 
 
-  timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "Random 0/59/1", "Range 0-21", "*", "*", "*");
+  timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time","", "Random 0/59/1", "Range 0-21", "*", "*", "*");
   //timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "*", "*", "*", "*", "*");
-  if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster", "Every 20", "*", "*", "*", "*");
+  if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster","", "Every 20", "*", "*", "*", "*");
 
 
 
@@ -213,7 +216,7 @@ void loop() {
   //if (conf.relays[1].relay_pin<0) return;
 
   //if (conf.relays[1].relay_pin>=0 && conf.relays[1].relay_switch_pin>=0 && conf.relays[1].relay_switch_pin_process_method==RELAY_SWITCH_PIN_PROCESS_METHOD_LOOP) processSwitch(1);
-  if (conf.relays[1].relay_pin >= 0 && conf.relays[1].relay_switch_pin >= 0 && conf.relays[1].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(1);
+  //if (conf.relays[1].relay_pin >= 0 && conf.relays[1].relay_switch_pin >= 0 && conf.relays[1].relay_switch_pin_process_method == RELAY_SWITCH_PIN_PROCESS_METHOD_INTERRUPT) processSwitchInterrupt(1);
   //if (conf.relays[1].relay_pin>=0 && conf.relays[1].relay_led_pin>=0)  processLed(1) ;
 
   //yield();

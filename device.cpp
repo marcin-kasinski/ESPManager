@@ -57,15 +57,12 @@ void processRelayLed(int index) {
     setLedState(index, 0);
 
  } //if (current_hour_for_led>=23 ||current_hour_for_led<=17 && conf.relays[index].relay_state==0) 
-  else 
-  
-  
-  {
+//  else 
+//  {
     //setLedState(index, conf.relays[index].relay_state);
   //    if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_ON) setLedState(index, instate);
   //    else if (conf.relays[index].relay_led_pin >= 0 && conf.relays[index].relay_led_on_when == LED_ON_WHEN_RELAY_OFF) setLedState(index, !instate);
-
-  }
+//  }
   
   MQTTLogMessage(String(F("processRelayLed END ")) + index);
 
@@ -75,6 +72,7 @@ void processRelayLed(int index) {
 void setLedState(int index, byte state) {
 
  MQTTLogMessage(String("setLedState ") + index +"/"+state);
+ conf.relays[index].relay_led_state=state; 
 
   if (conf.relays[index].relay_led_pin < 0) return;
 

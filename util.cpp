@@ -33,7 +33,7 @@ LinkedList < AppLog > appLogs = LinkedList < AppLog > ();
 //volatile unsigned long last_loop;
 
 ESP8266WebServer httpServer(80);
-ESP8266HTTPUpdateServer httpUpdater(true);
+//ESP8266HTTPUpdateServer httpUpdater(true);
 
 void addAppLogMessage(String message) {
 
@@ -110,9 +110,10 @@ bool isupdateSunriseSunsetUpToDate() {
   if (runtime.sunset_update_time.indexOf(current_date) > 0) {
     //    Serial.printf("sunset time is up to date\n");
     //    MQTTLogMessage("Sunset time is up to date. Update time: " + runtime.sunset_update_time);
-    //MQTTLogMessage("Sunset time is up to date");
+//    MQTTLogMessage("Sunset time is up to date");
     ret = true;
   }
+//  MQTTLogMessage("Sunset time is up to date? :"+String(ret));
   return ret;
 }
 
@@ -148,7 +149,7 @@ void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String s
   //if (conf.discoverable==true)   sendUDPMessageAsync("PING");
   //        MQTTLogMessage("U4");
 
-  //MQTTLogMessage("updateSunriseSunsetInfo END");
+  MQTTLogMessage("updateSunriseSunsetInfo END");
 
   //      MQTTLogMessage("U5");
 
@@ -219,6 +220,7 @@ void getSunriseSunset(String key, String city) {
   //http://api.weatherstack.com/current?access_key=key&query=Warsaw
 
   HTTPClient http;
+  MQTTLogMessage("http.begin");
   http.begin("http://api.weatherstack.com/forecast?access_key=" + key + "&query=" + city);
 
   MQTTLogMessage(String("URL: http://api.weatherstack.com/forecast?access_key=") + key + "&query=" + city);
@@ -1340,7 +1342,7 @@ bool loadConfigFromString(String in ) {
     String month = timer["month"];
     String weekday = timer["weekday"];
 
-    timer1.addTask("USER", timer["device_id"], timer["function_name"], minute, hour, day, month, weekday);
+    timer1.addTask("USER", timer["device_id"], timer["function_name"], timer["function_name_parameter"], minute, hour, day, month, weekday);
   }
 
   //JsonObject relay0 = relays[0];
@@ -1528,6 +1530,7 @@ bool saveConfig() {
 
     timer["device_id"] = timer1.cronObjects.get(i).device_id;
     timer["function_name"] = timer1.cronObjects.get(i).function_name;
+    timer["function_name_parameter"] = timer1.cronObjects.get(i).function_name_parameter;
 
     timer["minute"] = cronObject.minute_logical;
     timer["hour"] = cronObject.hour_logical;
@@ -1583,6 +1586,7 @@ bool processConfig() {
 
 }
 
+/*
 void sendToDomoticz() {
   // int status = WL_IDLE_STATUS;     // the Wifi radio's status
   WiFiClient client;
@@ -1621,7 +1625,7 @@ void sendToDomoticz() {
   //Serial.println("Temp sent");
 
 }
-
+*/
 void initWWW() {
   //ESP8266WebServer httpServer(80);
   //ESP8266HTTPUpdateServer httpUpdater(true);
@@ -1766,12 +1770,12 @@ void initOTA() {
     else if (error == OTA_END_ERROR) MQTTLogMessage("End Failed");
   });
 
-  ArduinoOTA.setPassword(conf.OTA_password.c_str());
+  if (conf.security_enable== true) ArduinoOTA.setPassword(conf.OTA_password.c_str());
 
   ArduinoOTA.setHostname(conf.hostName.c_str());
 
   ArduinoOTA.begin();
 
-  //  Serial.printf("OTA server started\n");
+  MQTTLogMessage("OTA server started");
 
 }

@@ -383,11 +383,21 @@ function processAjaxListTasks(divid, file, injson)
 			}
 			if (weekday_logical.startsWith("Range")) weekday_logical=replaceNumbesToValuesFomTab(weekdays , weekday_logical, '-',0);
 			
+
+			function_name_parameter_string="";
+			
+			
+			if (obj.Tasks[i].function_name_parameter.trim()!='null' && obj.Tasks[i].function_name_parameter.trim()!='')
+			{
+			
+			function_name_parameter_string=' (<small style="color:#f38d45"> '+obj.Tasks[i].function_name_parameter.trim()+' </small>)';
+			}
+			
 			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1">'+
 			'<td>'+minutebefore+minute_logical+minuteafter+'</td><td>'+hourbefore+hour_logical+hourafter+'</td>'+
 			'<td>'+daybefore+day_logical+dayafter+'</td><td>'+monthbefore+month_logical+monthafter+'</td>'+
 			'<td>'+weekdaybefore+weekday_logical+weekdayafter+'</td>'+
-			'<td>'+obj.Tasks[i].function_name.trim()+'</td>'+			
+			'<td>'+obj.Tasks[i].function_name.trim()+function_name_parameter_string+'</td>'+			
 			'<td>'+obj.Tasks[i].device_id.trim()+'</td>'+
 			
 			'<td style="width:40px">'+
@@ -417,6 +427,7 @@ function processAjaxListTasks(divid, file, injson)
 			<th class="cbi-section-table-cell">Month</th>
 			<th class="cbi-section-table-cell">Day of the week</th>
 			<th class="cbi-section-table-cell">Function name</th>
+			<th class="cbi-section-table-cell">Function parameter</th>
 			<th class="cbi-section-table-cell">Device</th>
 			<th class="cbi-section-table-cell">Actions</th>
 		</tr>
@@ -458,7 +469,7 @@ function processAjaxListTasks(divid, file, injson)
 			</td>
 			
 			<td class="cbi-section-table-cell">
-					<select class="cbi-input-select" onchange="onChangeUpdateNetProto(this);" id="function_name" name="function_name">
+					<select class="cbi-input-select" onchange="onChangeFunctionName(this);" id="function_name" name="function_name">
 					<option id="Relay on" value="Relay on" >Relay on</option>
 					<option id="Relay off" value="Relay off" >Relay off</option>
 					<option id="Reset relay if no internet connection" value="Reset relay if no internet connection" >Reset relay if no internet connection</option>
@@ -470,6 +481,28 @@ function processAjaxListTasks(divid, file, injson)
 					<option id="RGBLed off at sunrise" value="RGBLed off at sunrise" >RGBLed off at sunrise</option>
 					</select>
 			</td>
+
+			<td class="cbi-section-table-cell">
+					<select class="cbi-input-select" id="function_name_parameter" name="function_name_parameter" style="display:none">
+					<option value="-2h" >-2h</option>
+					<option value="-1h 45m" >-1h 45m</option>
+					<option value="-1h 30m" >-1h 30m</option>
+					<option value="-1h 15m" >-1h 15m</option>
+					<option value="-1h" >-1h</option>
+					<option value="-45m" >-45m</option>
+					<option value="-30m" >-30m</option>
+					<option value="-15m" >-15m</option>
+					<option value="+15m" >15m</option>
+					<option value="+30m" >+30m</option>
+					<option value="+45m" >_45m</option>
+					<option value="+1h" >+1h</option>
+					<option value="+1h 15m" >+1h 15m</option>
+					<option value="+1h 30m" >+1h 30m</option>
+					<option value="+1h 45m" >+1h 45m</option>
+					<option value="+2h" >+2h</option>
+					</select>
+			</td>
+
 			
 			<td class="cbi-section-table-cell">
 					<select class="cbi-input-select" onchange="onChangeUpdateNetProto(this);" id="device_id" name="device_id">
@@ -492,6 +525,34 @@ function processAjaxListTasks(divid, file, injson)
 		
 
 <script>
+
+
+
+function onChangeFunctionName(dropdown) {
+	
+var value = dropdown.options[dropdown.selectedIndex].value;
+
+var element=document.getElementById('function_name_parameter');
+
+
+if (value =="Relay on at sunset" || value =="Relay off at sunrise")
+{
+//alert (value);
+element.setAttribute('style','display:block');
+}
+else element.setAttribute('style','display:none');
+
+
+//if (value=="static") 
+//{
+//	updateDivFromFile("container.network.lan.general", "proto_static");
+
+//	}
+//else if (value=="dhcp") updateDivFromFile("container.network.lan.general", "proto_dhcp");
+
+}
+
+
 
 
 function clearSelectElements()

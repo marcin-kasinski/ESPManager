@@ -284,8 +284,11 @@ void handleAddTask() {
 
   String device_id = httpServer.arg("devuce_id");
   String function_name = httpServer.arg("function_name");
+  String function_name_parameter = httpServer.arg("function_name_parameter");
 
-  timer1.addTask("USER", device_id.toInt(), function_name, minutein, hourin, dayin, monthin, dayofweekin);
+//  MQTTLogMessage(String("function_name_parameter: ")+function_name_parameter );
+
+  timer1.addTask("USER", device_id.toInt(), function_name,function_name_parameter, minutein, hourin, dayin, monthin, dayofweekin);
 
   saveConfig();
 
@@ -369,6 +372,7 @@ void handleJSONListSheduledTasks() {
       "\"day\":\"" + cronObjects.day + "\"" + "," + "\"day_logical\":\"" + cronObjects.day_logical + "\"" + "," +
       "\"month\":\"" + cronObjects.month + "\"" + "," + "\"month_logical\":\"" + cronObjects.month_logical + "\"" + "," +
       "\"weekday\":\"" + cronObjects.weekday + "\"" + "," + "\"weekday_logical\":\"" + cronObjects.weekday_logical + "\"" + "," +
+      "\"function_name_parameter\":\"" + cronObjects.function_name_parameter  + "\"" + "," +
       "\"function_name\":\"" + cronObjects.function_name + "\"}\n";
 
   } //for
@@ -383,6 +387,20 @@ void handleJSONListSheduledTasks() {
   httpServer.send(200, "text/html", "");
   httpServer.sendContent(content.c_str());
 
+}
+
+
+void handleDeleteOtherEspDevice() {
+
+  ////Serial.printf("handleDeleteTask\n");
+
+  if (!processToken()) return;
+
+  int index = httpServer.arg("index").toInt();
+
+  //Serial.printf("index %d\n",index);
+  MDNSObjects.remove(index);
+  handleJSONListOtherDevices();
 }
 
 void handleJSONListOtherDevices() {

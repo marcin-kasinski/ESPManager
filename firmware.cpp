@@ -1,3 +1,4 @@
+
 #include <Arduino.h>
 
 #include <WiFiClient.h>
@@ -92,6 +93,10 @@ void handleFirmwarePost() {
     }
 
     uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+
+      MQTTLogMessage(String("Update maxSketchSpace: ") + maxSketchSpace);
+
+
     if (!Update.begin(maxSketchSpace, mode)) { //start with max available size
       Update.printError(Serial);
     }

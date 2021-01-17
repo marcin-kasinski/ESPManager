@@ -61,14 +61,14 @@ const char * const SWITCH_TYPES[] =
 
 //String SWITCH_TYPES22[] = { "BUTTON","SWITCH"};
 
-static const uint8_t DD1   = 5;
-static const uint8_t DD2   = 4;
+//static const uint8_t DD1   = 5;
+//static const uint8_t DD2   = 4;
 
 #define CONF_FILE "/conf/conf.props" 
 
-#define RUNTIME_MODE_OK 1
-#define RUNTIME_MODE_WIFI_PROBLEM -2
-#define RUNTIME_MODE_MQTT_PROBLEM -1
+//#define RUNTIME_MODE_OK 1
+//#define RUNTIME_MODE_WIFI_PROBLEM -2
+//#define RUNTIME_MODE_MQTT_PROBLEM -1
 
 #define FIRMWARE_TYPE_FIRMWARE 1
 #define FIRMWARE_TYPE_SPIFFS 2
@@ -100,12 +100,12 @@ String getHourString (byte hour, byte minute);
 void processAPReboot();
 
 
-void sendToDomoticz();
+//void sendToDomoticz();
 //void processFirmwareUpdateSheduler();
 void updateFirmwareFromNet();
 //char* string2char(String command);
 
-bool isWebAddressAvailable(String webPage);
+//bool isWebAddressAvailable(String webPage);
 void reboot();
 void initWatchdog();
 
@@ -161,6 +161,7 @@ byte relay_switch_type=RELAY_SWITCH_TYPE_BUTTON;
 //byte relay_switch_type=RELAY_SWITCH_TYPE_SWITCH;
 
 int relay_state=0;
+int relay_led_state=0;
 int relay_conn_type=RELAY_CONN_TYPE_NC;
 
 int relay_led_pin=-1;
@@ -184,7 +185,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 15.28;
+float firmware_version = 16.34;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
@@ -209,7 +210,7 @@ unsigned int ntpUDPLocalPort = 2390;      // local port to listen for UDP packet
 String ntpserver;
 
 String OTA_password="admin76";
-boolean security_enable=true;
+boolean security_enable=false;
 boolean OTA_enable=false;
 boolean discoverable=false;
 
@@ -263,15 +264,15 @@ String temperature_measure_time;
 boolean getSunriseSunsetRequest=false;
 
 char ip[16] = {0};
-byte runtime_mode=-2000;
+//byte runtime_mode=-2000;
 unsigned long start_milis=0;
 //unsigned long last_firmware_update=0;
 //unsigned long last_temerature_get=-900000;
 String mac_STA;
 // co ile minut ma sprawdzać w sieci, czy nie ma nowego firmware.
 
-boolean rainbow_state_enable=false;
-byte state_before_rainbow;
+//boolean rainbow_state_enable=false;
+//byte state_before_rainbow;
 
 LinkedList<String> udpmessages = LinkedList<String>();
 

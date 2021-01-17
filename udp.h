@@ -8,6 +8,7 @@ struct MDNSObject {
   char hostName[20];
   char ip[16];
   char firmware_version[10];
+  char spiffs_version[10];
   char timestamp[20];
   char uptime[20];
 };

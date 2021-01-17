@@ -45,7 +45,7 @@ bool MQTTpublish(String message) {
 bool MQTTLogMessage(String message)
 //bool MQTTLogMessage(const char *message)
 {
-  if (conf.interruptProcess == false) Serial.printf("MQTTLog [%s]\n", message.c_str());
+  if (conf.interruptProcess == false) Serial.printf("MQTTLog [%s] [%s]\n", NTP.getTimeDateString().c_str(),message.c_str());
   //Serial.printf("MQTTLog [%s]\n",message); 
   //return true;
   return MQTTpublish("itzone/device/"+conf.hostName+"/log", NTP.getTimeDateString()+":"+message);
@@ -128,6 +128,7 @@ bool getDevices(String url) {
 
 }
 
+/*
 void callback(char * topic, byte * payload, unsigned int length) {
 
   //  Serial.print("MQTT message arrived [");
@@ -161,17 +162,6 @@ void callback(char * topic, byte * payload, unsigned int length) {
   deserializeJson(doc, json);
   JsonObject root = doc.to < JsonObject > ();
 
-  /*
-  DynamicJsonDocument jsonBuffer(conf.json_max_length); 
-
-  JsonObject& root = jsonBuffer.parseObject(json);
-
-  // Test if parsing succeeds.
-  if (!root.success()) {
-    Serial.println("parseObject() failed");
-    return;
-  }
-*/
   const char * idx = root["idx"];
   const char * nvalue = root["nvalue"];
 
@@ -194,39 +184,13 @@ void callback(char * topic, byte * payload, unsigned int length) {
     } //if
   } //for
 
-  /*
-  else if (idx_int==conf.relays[1].domoticz_device_idx) 
-  {
-    int nvalue_int= atoi(nvalue );
-
-    MQTTLogMessage(String("new mqtt message for relay 1 domoticz idx ")+idx_int+" value "+nvalue_int);
-
-    conf.relays[1].relay_state =nvalue_int;
-    
-    setRelayState(1,nvalue_int);
-    saveConfig();
-  }
-
-  */
-
-  //getDevices();
-  /*
-    // Switch on the LED if an 1 was received as first character
-    if ((char)payload[0] == '1') {
-      digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-      // but actually the LED is on; this is because
-      // it is acive low on the ESP-01)
-    } else {
-      digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-    }
-  */
 }
-
+*/
 void initMQTT() {
   MQTTLogMessage("initMQTT");
 
   mqttclient.setServer(conf.MQTT_hostName.c_str(), 1883);
-  mqttclient.setCallback(callback);
+ // mqttclient.setCallback(callback);
   MQTTConnect();
   sendUDPMessageAsync("REFRESH");
 
