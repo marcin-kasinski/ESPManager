@@ -384,20 +384,27 @@ function processAjaxListTasks(divid, file, injson)
 			if (weekday_logical.startsWith("Range")) weekday_logical=replaceNumbesToValuesFomTab(weekdays , weekday_logical, '-',0);
 			
 
+			function_name_string=obj.Tasks[i].function_name.trim();
+
+			function_name_parameter_extra_string="";
+			
+			
+			if (function_name_string=='Relay on at sunset') function_name_parameter_extra_string=obj.extra_params.sunset;
+			else if (function_name_string=='Relay off at sunrise') function_name_parameter_extra_string=obj.extra_params.sunrise;
+	
 			function_name_parameter_string="";
 			
 			
 			if (obj.Tasks[i].function_name_parameter.trim()!='null' && obj.Tasks[i].function_name_parameter.trim()!='')
-			{
-			
-			function_name_parameter_string=' (<small style="color:#f38d45"> '+obj.Tasks[i].function_name_parameter.trim()+' </small>)';
+			{			
+			function_name_parameter_string=' (<small style="color:#f38d45"> '+function_name_parameter_extra_string+" "+obj.Tasks[i].function_name_parameter.trim()+' </small>)';
 			}
 			
 			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1">'+
 			'<td>'+minutebefore+minute_logical+minuteafter+'</td><td>'+hourbefore+hour_logical+hourafter+'</td>'+
 			'<td>'+daybefore+day_logical+dayafter+'</td><td>'+monthbefore+month_logical+monthafter+'</td>'+
 			'<td>'+weekdaybefore+weekday_logical+weekdayafter+'</td>'+
-			'<td>'+obj.Tasks[i].function_name.trim()+function_name_parameter_string+'</td>'+			
+			'<td>'+function_name_string+function_name_parameter_string+'</td>'+			
 			'<td>'+obj.Tasks[i].device_id.trim()+'</td>'+
 			
 			'<td style="width:40px">'+

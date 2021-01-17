@@ -353,7 +353,7 @@ void handleJSONListLogs() {
 void handleJSONListSheduledTasks() {
 
   String content = "";
-  content = content + "{ \"Tasks\" : [\n";
+  content = content + "{        \"extra_params\" : {              \"sunrise\" :  \""+runtime.sunrise_hour+":"+runtime.sunrise_minute+"\"     ,   \"sunset\" :  \""+runtime.sunset_hour+":"+runtime.sunset_minute+"\"   },                                                     \"Tasks\" : [\n";
 
   int listSize = timer1.cronObjects.size();
 
