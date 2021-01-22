@@ -203,6 +203,7 @@ row.outerHTML=html;
 		<tr class="cbi-section-table-titles" id="otherDevices_CollectingInit" >
 			<th class="cbi-section-table-cell">Hostname</th>
 			<th class="cbi-section-table-cell">IPv4-Address</th>
+			<th class="cbi-section-table-cell">Relays</th>
 			<th class="cbi-section-table-cell">Firmware version</th>
 			<th class="cbi-section-table-cell">Uptime</th>
 			<th class="cbi-section-table-cell">Last seen</th>
@@ -245,10 +246,41 @@ function processAjaxListOtherDevices(divid, file, injson)
 
 		for (i = 0; i < size; i++) 
 		{
+
+
+            /////////////////////
+		    var relayssize = obj.MDNSDevices[i].relays.length; 
+			
+			
+			var relay_html="";
+			
 			
 
-			spiffs_version_string="";
 			
+			console.log("hostname "+ obj.MDNSDevices[i].hostname.trim()+", relayssize "+relayssize); 
+
+		    for (ii = 0; ii < relayssize; ii++) 
+		    {	
+		 
+		 idlabel='externalrelay_'+obj.MDNSDevices[i].hostname.trim()+'_'+obj.MDNSDevices[i].relays[ii].id+'.relay_switch_label';
+		 idinput=obj.MDNSDevices[i].hostname.trim()+'_relay'+obj.MDNSDevices[i].relays[ii].id;
+		 url='http://'+obj.MDNSDevices[i].IP.trim()+'/handleJSONSwitchChange?index='+obj.MDNSDevices[i].relays[ii].id+'&token=1';
+
+				
+				relay_html=relay_html+'<label id="'+idlabel+'" class="cbi-value-title" for="'+idinput+'"></label><input class="cbi-button cbi-input-reset" id="'+idinput+'_button" value="Disable" type="submit"'+
+		'onClick="processAjaxRequest(\'\', \''+url+'\',processAjaxExternalSwitchChange, false); return false ;" >'+
+		'<input type="hidden" name="'+idinput+'" id="'+idinput+'" ><br>' ;// +  relay_html+"id:"+obj.MDNSDevices[i].relays[ii].id+", state:"+obj.MDNSDevices[i].relays[ii].id+"<BR>";
+				
+				//console.log("relay_html "+ relay_html); 
+
+			}
+
+			console.log("relay_html NEW :"+ relay_html); 
+
+
+            /////////////////////
+
+			spiffs_version_string="";
 			
 			if (typeof obj.MDNSDevices[i].spiffs_version != "undefined")
 			
@@ -260,17 +292,98 @@ function processAjaxListOtherDevices(divid, file, injson)
 			///////////			
 			
 			var row = table.insertRow(i+1);	
-			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1"><td><a href="http://'+obj.MDNSDevices[i].IP.trim()+'">'+obj.MDNSDevices[i].hostname.trim()+'</a></td><td>'+obj.MDNSDevices[i].IP.trim()+'</td><td>'+
-			obj.MDNSDevices[i].firmware_version.trim()+
-			
-			spiffs_version_string+'</td><td>'+obj.MDNSDevices[i].uptime.trim()+'</td><td>'+obj.MDNSDevices[i].timestamp.trim()+'</td><td style="width:40px">'+
+			row.outerHTML='<tr class="cbi-section-table-row cbi-rowstyle-1"><td><a href="http://'+obj.MDNSDevices[i].IP.trim()+'">'+obj.MDNSDevices[i].hostname.trim()+'</a></td><td>'+obj.MDNSDevices[i].IP.trim()+'</td>'+
+			'<td>'+relay_html+'</td>'+
+			'<td>'+obj.MDNSDevices[i].firmware_version.trim() + spiffs_version_string+'</td>'+
+			'<td>'+obj.MDNSDevices[i].uptime.trim()+'</td><td>'+obj.MDNSDevices[i].timestamp.trim()+'</td><td style="width:40px">'+
 //'<img src="img/edit.gif" title="Edit this device ('+i+')" value="Edit" onclick="editTask('+i+'); return false;"> '+
 '<img src="img/remove.gif" title="Delete this device ('+i+')" value="Delete" onclick="deleteDevice('+i+'); return false;">'+
 '</td></tr>';						
+
+
+
+	    for (ii = 0; ii < relayssize; ii++) 
+		    {	
+		 
+		 host=obj.MDNSDevices[i].hostname.trim();
+		 idinput=obj.MDNSDevices[i].relays[ii].id;
+		 internalName=obj.MDNSDevices[i].relays[ii].internalName;
+		 relaystate=obj.MDNSDevices[i].relays[ii].state;
+	
+
+	processExternalRelayState(host, idinput,internalName, relaystate) ;
+			}//	    for (ii = 0; ii < relayssize; ii++) 
+
+
+
 			
 			}	
 	
 }			
+
+
+function processAjaxExternalSwitchChange(divid, file, injson) 
+{
+	console.log('injson '+ injson); 
+	//processExternalRelayState(host, idinput, relaystate);
+	
+		var obj = JSON.parse(injson);
+	var size = obj.runtime.length; 
+	
+				for (i = 0; i < size; i++) 
+				{
+	
+	
+	index=obj.runtime[i].n.trim().substring(11);
+	
+	internalName=obj.runtime[i].internalName;
+
+	
+	v=obj.runtime[i].v.trim();
+	host=obj.runtime[i].host.trim();
+	//console.log('index '+ index); 
+	//console.log('v '+ v); 
+	//console.log('host '+ host); 
+	processExternalRelayState(host, index,internalName, v);
+
+				}//for
+}
+
+
+
+
+function processExternalRelayState(host ,index, internalName, relay_state) 
+{	
+//alert('IP '+ip+' / index= '+ index+' / state='+relay_state);
+//console.log("processExternalRelayState :"); 
+//console.log("host :"+ host); 
+//console.log("index :"+ index); 
+//console.log("relay_state :"+ relay_state); 
+
+if (relay_state=="255" || relay_state=="0")
+	{
+		//setValue(host+'_'+"relay"+index+".relay_switch_label","Relay "+relay_internalName+" is disabled");
+		setValue("externalrelay_"+host+'_'+index+".relay_switch_label",internalName+" is disabled ");
+		setValue(host+'_'+"relay"+index+"_button","Enable");
+		setElementAttribute(host+'_'+"relay"+index+"_button","class", "cbi-button cbi-input-apply");		
+	}//if
+
+	else 
+	{
+		//setValue("externalrelay_"+host+'_'+index+".relay_switch_label","Relay "+relay_internalName+" is enabled");
+		setValue("externalrelay_"+host+'_'+index+".relay_switch_label",internalName+" is enabled ");
+		setValue(host+'_'+"relay"+index+"_button","Disable");
+		setElementAttribute(host+'_'+"relay"+index+"_button","class", "cbi-button cbi-input-reset");	
+	}//if
+
+//	setValue("relay"+index+".relay_switch",relay_state);
+
+
+
+
+}
+
+
 
 function updateMemory()
 {

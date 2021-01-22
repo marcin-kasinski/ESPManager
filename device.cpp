@@ -12,6 +12,8 @@
 
 #include "mqtt.h"
 
+#include "udp.h"
+
 #include "timer.h"
 
 #include <NtpClientLib.h>
@@ -95,7 +97,7 @@ void setRelayState(int index, byte instate) {
 
   if (conf.relays[index].relay_pin < 0) return;
 
-  //MQTTLogMessage(String("setRelayState state index : ") + index + " state " + state);
+  MQTTLogMessage(String("setRelayState state START index : ") + index + " state " + state);
   addAppLogMessage(String("setRelayState state index : ") + index + " state " + state);
 
   if (conf.relays[index].relay_conn_type == RELAY_CONN_TYPE_NC) state = !state;
@@ -111,6 +113,9 @@ void setRelayState(int index, byte instate) {
 
   //current_hour_for_led=-1;
   if (conf.relays[index].relay_led_pin >= 0 && instate == 0) processRelayLed(index);
+  if (conf.discoverable == true) sendUDPPing();
+
+  MQTTLogMessage(String("setRelayState state END index : ") + index + " state " + state);
 
 }
 

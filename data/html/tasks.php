@@ -482,10 +482,12 @@ function processAjaxListTasks(divid, file, injson)
 					<option id="Reset relay if no internet connection" value="Reset relay if no internet connection" >Reset relay if no internet connection</option>
 					<option id="Relay on at sunset" value="Relay on at sunset" >Relay on at sunset</option>
 					<option id="Relay off at sunrise" value="Relay off at sunrise" >Relay off at sunrise</option>
+<!--
 					<option id="RGBLed on" value="RGBLed on" >RGBLed on</option>
 					<option id="RGBLed off" value="RGBLed off" >RGBLed off</option>
 					<option id="RGBLed on at sunset" value="RGBLed on at sunset" >RGBLed on at sunset</option>
 					<option id="RGBLed off at sunrise" value="RGBLed off at sunrise" >RGBLed off at sunrise</option>
+					-->
 					</select>
 			</td>
 
@@ -501,7 +503,7 @@ function processAjaxListTasks(divid, file, injson)
 					<option value="-15m" >-15m</option>
 					<option value="+15m" >15m</option>
 					<option value="+30m" >+30m</option>
-					<option value="+45m" >_45m</option>
+					<option value="+45m" >+45m</option>
 					<option value="+1h" >+1h</option>
 					<option value="+1h 15m" >+1h 15m</option>
 					<option value="+1h 30m" >+1h 30m</option>
@@ -537,10 +539,12 @@ function processAjaxListTasks(divid, file, injson)
 
 function onChangeFunctionName(dropdown) {
 	
+console.log('onChangeFunctionName');	
 var value = dropdown.options[dropdown.selectedIndex].value;
 
-var element=document.getElementById('function_name_parameter');
+console.log('value '+value);	
 
+var element=document.getElementById('function_name_parameter');
 
 if (value =="Relay on at sunset" || value =="Relay off at sunrise")
 {

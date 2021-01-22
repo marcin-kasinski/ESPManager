@@ -130,7 +130,7 @@ void processOTA();
 extern ESP8266WebServer httpServer;
 //extern ESP8266HTTPUpdateServer httpUpdater;
 
-
+/*
 struct RGBLed {
 
 int state=0;
@@ -141,7 +141,7 @@ byte b=0;
 byte w=255;
 byte wa=0;
 };
-
+*/
 struct Relay {
 
 String internalName="";
@@ -185,14 +185,14 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 16.36;
+float firmware_version = 16.51  ;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
 
 Relay relays[2];
 
-RGBLed rgbled ;
+//RGBLed rgbled ;
 int temperatureSensor_tempsensor_pin=-2;//4;
 int temperatureSensor_domoticz_device_idx=0;
 

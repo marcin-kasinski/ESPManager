@@ -3,6 +3,14 @@
 #include <LinkedList.h>
 #include <ArduinoJson.h>
 
+
+struct MDNSObjectRelay {
+
+  int id=-1;
+  char internalName[15];
+  byte state=-1;
+};
+
 struct MDNSObject {
 
   char hostName[20];
@@ -11,6 +19,9 @@ struct MDNSObject {
   char spiffs_version[10];
   char timestamp[20];
   char uptime[20];
+  //LinkedList<MDNSObjectRelay> MDNSObjectRelays;
+  MDNSObjectRelay MDNSObjectRelays[4];
+
 };
 
 

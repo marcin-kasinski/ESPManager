@@ -23,5 +23,5 @@ int readFullFile(char *path, String &content);
 
 int readFullFile(char *path, char *data);
 
-bool saveFile(String path,String indata) ;
+bool saveFile(char *path,String indata) ;
 #endif

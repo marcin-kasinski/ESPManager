@@ -35,18 +35,18 @@
 #endif
 
 /*
-String getPrepareInitValuesString()
-{
+  String getPrepareInitValuesString()
+  {
 
 
-String content ="\n<script>\n";
+  String content ="\n<script>\n";
 
-content =content + "setValue('devicetitle' ,'"+ conf.hostName +" ( ver. "+ conf.firmware_version +" )',''); \n";
+  content =content + "setValue('devicetitle' ,'"+ conf.hostName +" ( ver. "+ conf.firmware_version +" )',''); \n";
 
-content =content + "</script>";
+  content =content + "</script>";
 
   return content ;
-}
+  }
 */
 
 bool processToken() {
@@ -70,7 +70,7 @@ bool processToken() {
 
 }
 /*
-void handleRestAPI() {
+  void handleRestAPI() {
 
   //Serial.printf("handleRestAPI :%s\n");
 
@@ -88,7 +88,7 @@ void handleRestAPI() {
   httpServer.send(200, "text/html", "");
   httpServer.sendContent(content);
 
-}
+  }
 */
 void handlePage(String page) {
 
@@ -98,9 +98,9 @@ void handlePage(String page) {
   String content = "<script>\nvar token='" + runtime.token + "';\n</script>";
 
 
-//int s1=getWebFileSize("/html/before.php") ;
-//int s2=getWebFileSize("/html/after.php") ;
-//int s3=getWebFileSize((char *) page.c_str()) ;
+  //int s1=getWebFileSize("/html/before.php") ;
+  //int s2=getWebFileSize("/html/after.php") ;
+  //int s3=getWebFileSize((char *) page.c_str()) ;
 
 
   int size = getFileSize("/html/before.php") + getFileSize("/html/after.php") + content.length() + getFileSize((char * ) page.c_str());
@@ -110,11 +110,11 @@ void handlePage(String page) {
   //int ret4= httpServerSendFileContent( "/html/processticket.php");
 
   httpServer.sendContent(content);
-  //int ret= 
+  //int ret=
   httpServerSendFileContent("/html/before.php");
-  //int ret2= 
+  //int ret2=
   httpServerSendFileContent((char * ) page.c_str());
-  //int ret3= 
+  //int ret3=
   httpServerSendFileContent("/html/after.php");
 
   //if (ret==-1) httpServer.send(200, "text/html", "error....");
@@ -132,23 +132,23 @@ void handleRoot() {
   handlePage("/html/status.php");
 
   return;
-/*
-  if (!processAuth()) return;
+  /*
+    if (!processAuth()) return;
 
-  int size = getFileSize("/html/before.php") + getFileSize("/html/after.php") + getFileSize("/html/status.php");
+    int size = getFileSize("/html/before.php") + getFileSize("/html/after.php") + getFileSize("/html/status.php");
 
-  httpServer.setContentLength(size);
-  httpServer.send(200, "text/html", "");
+    httpServer.setContentLength(size);
+    httpServer.send(200, "text/html", "");
 
-  //int ret= 
-  httpServerSendFileContent("/html/before.php");
-  //int ret2= 
-  httpServerSendFileContent("/html/status.php");
-  //int ret3= 
-  httpServerSendFileContent("/html/after.php");
-  //httpServer.sendContent(content);
-  //if (ret==-1) httpServer.send(200, "text/html", "error....");
-*/
+    //int ret=
+    httpServerSendFileContent("/html/before.php");
+    //int ret2=
+    httpServerSendFileContent("/html/status.php");
+    //int ret3=
+    httpServerSendFileContent("/html/after.php");
+    //httpServer.sendContent(content);
+    //if (ret==-1) httpServer.send(200, "text/html", "error....");
+  */
 }
 
 void handleJSONSwitchChange() {
@@ -168,9 +168,9 @@ void handleJSONSwitchChange() {
 
   // jesli led
   if (index == -1) {
-//    RGBLedSetStatePermanently(!conf.rgbled.state);
+    //    RGBLedSetStatePermanently(!conf.rgbled.state);
 
-//    content = content + "{" + "\"n\":\"rgbled.state\"," + "\"v\":\"" + conf.rgbled.state + "\"" + ",\"h\":\"\"}\n";
+    //    content = content + "{" + "\"n\":\"rgbled.state\"," + "\"v\":\"" + conf.rgbled.state + "\"" + ",\"h\":\"\"}\n";
 
   }
   //jesli relay
@@ -183,7 +183,8 @@ void handleJSONSwitchChange() {
       MQTTpublish(String("{\"command\": \"switchlight\", \"idx\": ") + conf.relays[index].domoticz_device_idx + ", \"switchcmd\": \"" + switchcmd.c_str() + "\"  }");
     }
 
-    content = content + "{" + "\"n\":\"relay_state" + index + "\"," + "\"v\":\"" + conf.relays[index].relay_state + "\"" + ",\"h\":\"\"}\n";
+    //content = content + "{" + "\"n\":\"relay_state" + index + "\"," + "\"v\":\"" + conf.relays[index].relay_state + "\"" + ",\"h\":\"\"}\n";
+    content = content + "{" + "\"n\":\"relay_state" + index + "\"," + "\"v\":\"" + conf.relays[index].relay_state + "\"" + "," + "\"internalName\":\"" + conf.relays[index].internalName + "\"" + ",\"host\":\"" + conf.hostName + "\"}\n";
 
   }
 
@@ -191,12 +192,20 @@ void handleJSONSwitchChange() {
   //conf.relays[index].relay_state=!conf.relays[index].relay_state;
   //    saveConfig();
 
-  Serial.println(content.c_str());
+  //Serial.println(content.c_str());
 
   int size = content.length();
 
   httpServer.setContentLength(size);
+
+  httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+  httpServer.sendHeader("Access-Control-Max-Age", "10000");
+  httpServer.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,OPTIONS");
+  httpServer.sendHeader("Access-Control-Allow-Headers", "*");
+
   httpServer.send(200, "text/html", "");
+
+  ////////////
   httpServer.sendContent(content.c_str());
   //Serial.printf("handleJSONSwitchChange() END\n");
 
@@ -263,11 +272,11 @@ void handleAddTask() {
   if (!processToken()) return;
 
   /*
-  int args_size=httpServer.args();
+    int args_size=httpServer.args();
 
      Serial.printf("Args\n");
 
-  for (int i=0;i<args_size;i++)
+    for (int i=0;i<args_size;i++)
       {
         String name=httpServer.argName(i);
         String value=httpServer.arg(i);
@@ -286,9 +295,9 @@ void handleAddTask() {
   String function_name = httpServer.arg("function_name");
   String function_name_parameter = httpServer.arg("function_name_parameter");
 
-//  MQTTLogMessage(String("function_name_parameter: ")+function_name_parameter );
+  //  MQTTLogMessage(String("function_name_parameter: ")+function_name_parameter );
 
-  timer1.addTask("USER", device_id.toInt(), function_name,function_name_parameter, minutein, hourin, dayin, monthin, dayofweekin);
+  timer1.addTask("USER", device_id.toInt(), function_name, function_name_parameter, minutein, hourin, dayin, monthin, dayofweekin);
 
   saveConfig();
 
@@ -334,7 +343,7 @@ void handleJSONListLogs() {
     if (i > 0) content = content + ",";
 
     content = content + "{" + "\"datetime\":\"" + appLogObject.datetime + "\"," +
-      "\"message\":\"" + appLogObject.message + "\"}\n";
+              "\"message\":\"" + appLogObject.message + "\"}\n";
 
   } //for
 
@@ -353,7 +362,7 @@ void handleJSONListLogs() {
 void handleJSONListSheduledTasks() {
 
   String content = "";
-  content = content + "{        \"extra_params\" : {              \"sunrise\" :  \""+runtime.sunrise_hour+":"+runtime.sunrise_minute+"\"     ,   \"sunset\" :  \""+runtime.sunset_hour+":"+runtime.sunset_minute+"\"   },                                                     \"Tasks\" : [\n";
+  content = content + "{        \"extra_params\" : {              \"sunrise\" :  \"" + runtime.sunrise_hour + ":" + runtime.sunrise_minute + "\"     ,   \"sunset\" :  \"" + runtime.sunset_hour + ":" + runtime.sunset_minute + "\"   },                                                     \"Tasks\" : [\n";
 
   int listSize = timer1.cronObjects.size();
 
@@ -366,14 +375,14 @@ void handleJSONListSheduledTasks() {
     if (i > 0) content = content + ",";
 
     content = content + "{" + "\"device_id\":\"" + cronObjects.device_id + "\"," +
-      "\"minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
-//      "\"type\":\"" + cronObjects.type +       "\", minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
-      "\"hour\":\"" + cronObjects.hour + "\"" + "," + "\"hour_logical\":\"" + cronObjects.hour_logical + "\"" + "," +
-      "\"day\":\"" + cronObjects.day + "\"" + "," + "\"day_logical\":\"" + cronObjects.day_logical + "\"" + "," +
-      "\"month\":\"" + cronObjects.month + "\"" + "," + "\"month_logical\":\"" + cronObjects.month_logical + "\"" + "," +
-      "\"weekday\":\"" + cronObjects.weekday + "\"" + "," + "\"weekday_logical\":\"" + cronObjects.weekday_logical + "\"" + "," +
-      "\"function_name_parameter\":\"" + cronObjects.function_name_parameter  + "\"" + "," +
-      "\"function_name\":\"" + cronObjects.function_name + "\"}\n";
+              "\"minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
+              //      "\"type\":\"" + cronObjects.type +       "\", minute\":\"" + cronObjects.minute + "\"," + "\"minute_logical\":\"" + cronObjects.minute_logical + "\"," +
+              "\"hour\":\"" + cronObjects.hour + "\"" + "," + "\"hour_logical\":\"" + cronObjects.hour_logical + "\"" + "," +
+              "\"day\":\"" + cronObjects.day + "\"" + "," + "\"day_logical\":\"" + cronObjects.day_logical + "\"" + "," +
+              "\"month\":\"" + cronObjects.month + "\"" + "," + "\"month_logical\":\"" + cronObjects.month_logical + "\"" + "," +
+              "\"weekday\":\"" + cronObjects.weekday + "\"" + "," + "\"weekday_logical\":\"" + cronObjects.weekday_logical + "\"" + "," +
+              "\"function_name_parameter\":\"" + cronObjects.function_name_parameter  + "\"" + "," +
+              "\"function_name\":\"" + cronObjects.function_name + "\"}\n";
 
   } //for
 
@@ -529,7 +538,7 @@ void handleJSONRuntimeInfo() {
 
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay_state0\"," + "\"v\":\"" + conf.relays[0].relay_state + "\"" + ",\"h\":\"\"},\n";
 
-//    Serial.printf("\n\n----------------------- Przeczytałem relay state 2 %d na indeksie %d \n\n",conf.relays[0].relay_state , 0);
+    //    Serial.printf("\n\n----------------------- Przeczytałem relay state 2 %d na indeksie %d \n\n",conf.relays[0].relay_state , 0);
 
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay0.internalName\"," + "\"v\":\"" + conf.relays[0].internalName + "\"" + ",\"h\":\"_\"},\n";
     contentCONF_Relays = contentCONF_Relays + "{" + "\"n\":\"relay0.relay_conn_type\"," + "\"v\":\"" + conf.relays[0].relay_conn_type + "\"" + ",\"h\":\"\"},\n";
@@ -559,7 +568,7 @@ void handleJSONRuntimeInfo() {
       content2 = content2 + "{" + "\"n\":\"temperature\"," + "\"v\":\"" + runtime.temperature + "\"" + ",\"h\":\"\"},\n";
       content2 = content2 + "{" + "\"n\":\"temperature_measure_time\"," + "\"v\":\"" + runtime.temperature_measure_time + "\"" + ",\"h\":\"\"},\n";
     }
-
+/*
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.enable\"," + "\"v\":\"" + conf.rgbled.enable + "\"" + ",\"h\":\"\"},\n";
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.enable_checkbox\"," + "\"v\":\"" + conf.rgbled.enable + "\"" + ",\"h\":\"\"},\n";
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.state\"," + "\"v\":\"" + conf.rgbled.state + "\"" + ",\"h\":\"\"},\n";
@@ -568,7 +577,7 @@ void handleJSONRuntimeInfo() {
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.b\"," + "\"v\":\"" + conf.rgbled.b + "\"" + ",\"h\":\"\"},\n";
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.w\"," + "\"v\":\"" + conf.rgbled.w + "\"" + ",\"h\":\"\"},\n";
     contentCONF_RGBLed = contentCONF_RGBLed + "{" + "\"n\":\"rgbled.wa\"," + "\"v\":\"" + conf.rgbled.wa + "\"" + ",\"h\":\"\"},\n";
-
+*/
     //    content=content+"{"+"\"n\":\"mqtt.MQTT_enable\","+"\"v\":\""+conf.MQTT_enable+"\""+    ",\"h\":\"\"},\n";
     //    content=content+"{"+"\"n\":\"mqtt.MQTT_enable_checkbox\","+"\"v\":\""+conf.MQTT_enable+"\""+    ",\"h\":\"\"},\n";
 
@@ -579,14 +588,14 @@ void handleJSONRuntimeInfo() {
   content2 = content2 + " ]}";
 
   /*
-    Serial.printf("content.length %d\n",content.length()); 
-    Serial.printf("contentGeneral.length %d\n",contentGeneral.length()); 
-    Serial.printf("contentMEM.length %d\n",contentMEM.length()); 
-    Serial.printf("contentCONF_Relays.length %d\n",contentCONF_Relays.length()); 
-    Serial.printf("contentCONF_RGBLed.length %d\n",contentCONF_RGBLed.length()); 
-    Serial.printf("contentCONF_MQTT.length %d\n",contentCONF_MQTT.length()); 
-    Serial.printf("contentCONF_Advanced.length %d\n",contentCONF_Advanced.length()); 
-    Serial.printf("content2.length %d\n",content2.length()); 
+    Serial.printf("content.length %d\n",content.length());
+    Serial.printf("contentGeneral.length %d\n",contentGeneral.length());
+    Serial.printf("contentMEM.length %d\n",contentMEM.length());
+    Serial.printf("contentCONF_Relays.length %d\n",contentCONF_Relays.length());
+    Serial.printf("contentCONF_RGBLed.length %d\n",contentCONF_RGBLed.length());
+    Serial.printf("contentCONF_MQTT.length %d\n",contentCONF_MQTT.length());
+    Serial.printf("contentCONF_Advanced.length %d\n",contentCONF_Advanced.length());
+    Serial.printf("content2.length %d\n",content2.length());
   */
 
   int size = content.length() + contentGeneral.length() + contentMEM.length() + contentCONF_Relays.length() + contentCONF_RGBLed.length() + contentCONF_MQTT.length() + contentCONF_Advanced.length() + content2.length();
@@ -623,7 +632,7 @@ void handleJSONListWifiNetworks() {
 bool processAuth() {
   //    Serial.printf("processAuth \n");
 
-  if (conf.security_enable== false) return true;
+  if (conf.security_enable == false) return true;
 
 
   if (!is_authentified()) {
@@ -665,9 +674,9 @@ void handleSaveConf() {
   */
 
   /*
-  String content=String("");
+    String content=String("");
 
-  for (int i=0;i<args_size;i++)
+    for (int i=0;i<args_size;i++)
       {
         String name=httpServer.argName(i);
         String value=httpServer.arg(i);
@@ -694,11 +703,11 @@ void handleSaveConf() {
       conf.wifi_ssid = httpServer.arg("cbid.network.lan.wifissid");
 
       //WiFi.begin(conf.wifi_ssid.c_str(), wifipassword.c_str());
-    } //if (!wifipassword.equals(""))  
+    } //if (!wifipassword.equals(""))
 
   }
 
-  //if (httpServer.hasArg("cbid.network.lan.wifipassword")) 
+  //if (httpServer.hasArg("cbid.network.lan.wifipassword"))
   //{
   //  conf.wifi_password=httpServer.arg("cbid.network.lan.wifipassword");
   String wifipassword = httpServer.arg("cbid.network.lan.wifipassword");
@@ -723,7 +732,7 @@ void handleSaveConf() {
   //     Serial.printf("setting new wifipassword %s \n", wifipassword.c_str());
 
   //WiFi.begin(conf.wifi_ssid.c_str(), wifipassword.c_str());
-  //}//if (!wifipassword.equals(""))  
+  //}//if (!wifipassword.equals(""))
 
   //}
 
@@ -736,6 +745,7 @@ void handleSaveConf() {
   if (httpServer.hasArg("adv.OTA_enable") && httpServer.arg("adv.OTA_enable").equals("true")) conf.OTA_enable = true;
   else if (httpServer.hasArg("adv.OTA_enable") && httpServer.arg("adv.OTA_enable").equals("false")) conf.OTA_enable = false;
 
+/*
   if (httpServer.hasArg("rgbled.enable") && httpServer.arg("rgbled.enable").equals("true")) conf.rgbled.enable = true;
   else if (httpServer.hasArg("rgbled.enable") && httpServer.arg("rgbled.enable").equals("false")) conf.rgbled.enable = false;
 
@@ -744,7 +754,7 @@ void handleSaveConf() {
   if (httpServer.hasArg("rgbled.b")) conf.rgbled.b = atoi(httpServer.arg("rgbled.b").c_str());
   if (httpServer.hasArg("rgbled.w")) conf.rgbled.w = atoi(httpServer.arg("rgbled.w").c_str());
   if (httpServer.hasArg("rgbled.wa")) conf.rgbled.wa = atoi(httpServer.arg("rgbled.wa").c_str());
-
+*/
   if (httpServer.hasArg("adv.discoverable") && httpServer.arg("adv.discoverable").equals("true")) conf.discoverable = true;
   else if (httpServer.hasArg("adv.discoverable") && httpServer.arg("adv.discoverable").equals("false")) conf.discoverable = false;
 
@@ -804,23 +814,23 @@ void handleRebootASK() {
   handlePage("/html/reboot.php");
 
   /*
-  if (!processAuth())    return;
+    if (!processAuth())    return;
 
       //Serial.printf("handleRebootASK() 2\n");
 
-  int size = getFileSize("/html/before.php") +getFileSize("/html/after.php")+getFileSize("/html/reboot.php");
+    int size = getFileSize("/html/before.php") +getFileSize("/html/after.php")+getFileSize("/html/reboot.php");
 
 
-  //    httpServer.sendHeader("Cache-Control","no-cache");
+    //    httpServer.sendHeader("Cache-Control","no-cache");
     httpServer.setContentLength(size);
     httpServer.send(200, "text/html", "");
 
-  int ret= httpServerSendFileContent( "/html/before.php");
-  int ret2= httpServerSendFileContent( "/html/reboot.php");
-  int ret3= httpServerSendFileContent( "/html/after.php");
+    int ret= httpServerSendFileContent( "/html/before.php");
+    int ret2= httpServerSendFileContent( "/html/reboot.php");
+    int ret3= httpServerSendFileContent( "/html/after.php");
 
 
-  if (ret==-1) httpServer.send(200, "text/html", "error....");
+    if (ret==-1) httpServer.send(200, "text/html", "error....");
   */
 }
 
@@ -830,21 +840,21 @@ void handleConf() {
   handlePage("/html/conf.php");
 
   /*
-   if (!processAuth())    return;
+    if (!processAuth())    return;
 
-  int size = getFileSize("/html/before.php") +getFileSize("/html/after.php")+getFileSize("/html/conf.php");
+    int size = getFileSize("/html/before.php") +getFileSize("/html/after.php")+getFileSize("/html/conf.php");
 
 
-  //    httpServer.sendHeader("Cache-Control","no-cache");
+    //    httpServer.sendHeader("Cache-Control","no-cache");
     httpServer.setContentLength(size);
     httpServer.send(200, "text/html", "");
 
-  int ret= httpServerSendFileContent( "/html/before.php");
-  int ret2= httpServerSendFileContent( "/html/conf.php");
-  int ret3= httpServerSendFileContent( "/html/after.php");
+    int ret= httpServerSendFileContent( "/html/before.php");
+    int ret2= httpServerSendFileContent( "/html/conf.php");
+    int ret3= httpServerSendFileContent( "/html/after.php");
 
 
-  if (ret==-1) httpServer.send(200, "text/html", "error....");
+    if (ret==-1) httpServer.send(200, "text/html", "error....");
   */
 }
 
@@ -914,7 +924,7 @@ void handleLogin() {
         Serial.print("Password in conf2[");
         Serial.print(conf.web_password);
         Serial.println("]");
-      */
+    */
     //Serial.printf("11 [%d]\n",httpServer.arg("ADMIN")=="admin");
     //Serial.printf("22 [%d]\n",httpServer.arg("ADMIN").equals("admin"));
 
@@ -934,14 +944,14 @@ void handleLogin() {
     //  Serial.println("Log in Failed");
   }
   /*
-    
+
     String content = "<html><body><form action='/login' method='POST'>To log in, please use : admin/admin<br>";
     content += "User:<input type='text' name='USERNAME' placeholder='user name'><br>";
     content += "Password:<input type='password' name='PASSWORD' placeholder='password'><br>";
     content += "<input type='submit' name='SUBMIT' value='Submit'></form>" + msg + "<br>";
     content += "You also can go <a href='/inline'>here</a></body></html>";
     httpServer.send(200, "text/html", content);
-    */
+  */
 
   int size = getFileSize("/html/before.php") + getFileSize("/html/loginform.php") + getFileSize("/html/after.php");
 
@@ -1017,6 +1027,16 @@ void handleNotFound() {
   //  prepareHeader(200, "text/html", 4);
   //  httpServer.sendContent("XXXX");
 
+  if (httpServer.method() == HTTP_OPTIONS)
+  {
+    httpServer.sendHeader("Access-Control-Allow-Origin", "*");
+    httpServer.sendHeader("Access-Control-Max-Age", "10000");
+    httpServer.sendHeader("Access-Control-Allow-Methods", "PUT,POST,GET,OPTIONS");
+    httpServer.sendHeader("Access-Control-Allow-Headers", "*");
+    httpServer.send(204);
+  }
+
+
   if (!handleFileRead(httpServer.uri())) httpServer.send(404, "text/plain", "FileNotFound");
 
 }
@@ -1068,6 +1088,7 @@ void handleJSONListDomoticzDevices() {
 void handleConfUpload() {
 
   //Serial.printf("handleConfUpload :%s\n",httpServer.uri().c_str());
+  MQTTLogMessage("handleConfUpload");
 
   int args_size = httpServer.args();
 
@@ -1081,21 +1102,23 @@ void handleConfUpload() {
 
   //String content=String("");
 
+/*
   for (int i = 0; i < args_size; i++) {
     String name = httpServer.argName(i);
     String value = httpServer.arg(i);
 
     //    Serial.printf("%s : %s\n",name.c_str(),value.c_str());
   }
-
+*/
   //if (!processToken()) return;
 
   // handler for the file upload, get's the sketch bytes, and writes
   // them through the Update object
-  HTTPUpload upload = httpServer.upload();
+  HTTPUpload& upload = httpServer.upload();
 
   if (upload.status == UPLOAD_FILE_START) {
 
+   savedConf ="";
     /*
         Serial.printf("UPLOAD_FILE_START\n");
 
@@ -1103,8 +1126,8 @@ void handleConfUpload() {
                     savedConf ="";
     */
     /*
-    //    fsUploadFileconf= SPIFFS.open(CONF_FILE, "w");
-    //       Serial.printf("3\n");
+      //    fsUploadFileconf= SPIFFS.open(CONF_FILE, "w");
+      //       Serial.printf("3\n");
         if(!fsUploadFileconf)
         {
               Serial.printf("open file failed %s\n" ,CONF_FILE);
@@ -1117,6 +1140,10 @@ void handleConfUpload() {
 
     //       Serial.printf("Writing upload.currentSize %d \n",upload.currentSize );
     //       Serial.printf("Writing buf %s \n",upload.buf);
+
+
+      //MQTTLogMessage(String("Writing ")+ String((char * ) upload.buf));
+
 
     savedConf = savedConf + String((char * ) upload.buf);
     //       Serial.printf("savedConf  %s\n",savedConf.c_str() );
@@ -1152,7 +1179,8 @@ void handleConfUpload() {
 }
 
 void handleConfUploadAfterFinished() {
-  //         Serial.println("handleConfUploadAfterFinished");
+  MQTTLogMessage("handleConfUploadAfterFinished");
+  MQTTLogMessage(savedConf);
 
   saveFile(CONF_FILE, savedConf);
 

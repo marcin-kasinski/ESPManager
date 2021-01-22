@@ -72,6 +72,7 @@ function addOptionToSelect(key, value, text)
 	
 }
 
+
 function processAjaxSwitchChange(divid, file, injson) 
 {
 	var obj = JSON.parse(injson);

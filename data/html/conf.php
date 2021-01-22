@@ -120,11 +120,11 @@ else visibility=1;
 			<a onclick="this.blur(); return cbi_t_switch('network.lan', 'physical3')">Relay4 Settings</a>	
 		</li>
 
-		
+<!--		
 		<li id="tab.network.lan.rgbled" class="cbi-tab-disabled">
 			<a onclick="this.blur(); return cbi_t_switch('network.lan', 'rgbled')">RGB Led Settings</a>	
 		</li>
-		
+	-->	
 		<li id="tab.network.lan.MQTT" class="cbi-tab-disabled">
 			<a onclick="this.blur(); return cbi_t_switch('network.lan', 'MQTT')">MQTT Settings</a>
 			
@@ -149,21 +149,22 @@ else visibility=1;
 	<div class="cbi-tabcontainer" id="container.network.lan.rgbled" style="display:none">
 						
 	<script type="text/javascript">
-		
+
+/*		
 	addDivCheckBox('container.network.lan.rgbled','Enable RGB Led','cbi-network-rgbled-enable','rgbled.enable');
-	
+
 	addDivInput('container.network.lan.rgbled','cbi-network-rgbled.r','Red','rgbled.r','max(255)', 'false','');	
 	addDivInput('container.network.lan.rgbled','cbi-network-rgbled.g','Green','rgbled.g','max(255)', 'false','');
 	addDivInput('container.network.lan.rgbled','cbi-network-rgbled.b','Blue','rgbled.b','max(255)', 'false','');
 	addDivInput('container.network.lan.rgbled','cbi-network-rgbled.w','White','rgbled.w','max(255)', 'false','');
 	addDivInput('container.network.lan.rgbled','cbi-network-rgbled.wa','Warm','rgbled.wa','max(255)', 'false','');
-
+*/
 	</script>
 
 
 	
 	</div>
-	<script type="text/javascript">cbi_t_add('network.lan', 'rgbled')</script>
+	<!--<script type="text/javascript">cbi_t_add('network.lan', 'rgbled')</script>-->
 
 <!---->
 		

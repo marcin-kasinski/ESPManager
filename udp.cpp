@@ -22,7 +22,7 @@ void sendUDPMessageAsync(String messagetype) {
 
   if (conf.discoverable == false) return;
 
-  MQTTLogMessage("UDP add async message");
+//  MQTTLogMessage("UDP add async message");
   runtime.udpmessages.add(messagetype);
 }
 
@@ -32,14 +32,14 @@ boolean initUDP() {
   boolean state = false;
 
 
-    MQTTLogMessage("Connecting to UDP");
+  MQTTLogMessage("Connecting to UDP");
 
   int ret = UDP.begin(9991);
 
   if (ret) {
 
     MQTTLogMessage("UDP Connection successful");
-    
+
     state = true;
 
     //timer1.addTask("SYSTEM",-1,"Send PING to cluster","Every 20","*", "*", "*","*");
@@ -60,12 +60,40 @@ void sendUDPMessage(String messagetype) {
   if (conf.discoverable == false) return;
   String message = "";
 
-  message = message + "{\"runtime\" : {\n";
 
-  message = message + "\"messagetype\":\"" + messagetype.c_str() + "\",\"hostName\":\"" + conf.hostName + "\"" + ",\"ip\":\"" + WiFi.localIP().toString() + "\"" + 
-  ",\"firmware_version\":\"" + conf.firmware_version + "\"" + 
-  ",\"spiffs_version\":\"" + conf.spiffs_version + "\"" + 
-  ",\"timestamp\":\"" + NTP.getTimeDateString() + "\"" + ",\"sunset_update_time\":\"" + runtime.sunset_update_time + "\"" + ",\"sunset\":\"" + getHourString(runtime.sunset_hour, runtime.sunset_minute) + "\"" + ",\"sunrise\":\"" + getHourString(runtime.sunrise_hour, runtime.sunrise_minute) + "\"" + ",\"uptime\":\"" + NTP.getUptimeString() + "\"\n";
+  String relays = "\"relays\" : [";
+
+  int pos = 0;
+  for (int i = 0; i < 2; i++) {
+    if (conf.relays[i].relay_pin < 0) continue;
+
+
+    if (pos > 0)relays = relays + ",";
+
+    relays = relays +  "{ \"id\":\"" + i + "\"" ;
+    relays = relays +  ", \"internalName\":\"" + conf.relays[i].internalName + "\" " ;
+    relays = relays +  ", \"state\":\"" + conf.relays[i].relay_state + "\" " ;
+    relays = relays +  " }" ;
+
+    pos++;
+  }//for
+
+  relays = relays + "]";
+
+
+
+  message = message + "{\"runtime\" : {\n";
+  message = message + relays + ",";
+
+  message = message + "\"messagetype\":\"" + messagetype.c_str() + "\",\"hostName\":\"" + conf.hostName + "\"" + ",\"ip\":\"" + WiFi.localIP().toString() + "\"" +
+
+
+
+            ",\"security_enable\":\"" + conf.security_enable + "\"" +
+
+            ",\"firmware_version\":\"" + conf.firmware_version + "\"" +
+            ",\"spiffs_version\":\"" + conf.spiffs_version + "\"" +
+            ",\"timestamp\":\"" + NTP.getTimeDateString() + "\"" + ",\"sunset_update_time\":\"" + runtime.sunset_update_time + "\"" + ",\"sunset\":\"" + getHourString(runtime.sunset_hour, runtime.sunset_minute) + "\"" + ",\"sunrise\":\"" + getHourString(runtime.sunrise_hour, runtime.sunrise_minute) + "\"" + ",\"uptime\":\"" + NTP.getUptimeString() + "\"\n";
 
   message = message + String(" }}");
 
@@ -96,21 +124,22 @@ void sendUDPMessage(String messagetype) {
   }
 
   //MQTTLogMessage("UDP message sent : "+message );
+  MQTTLogMessage("UDP sending message END");
 
 }
 
 void sendUDPPing() {
 
-  sendUDPMessage("PING");
+  sendUDPMessageAsync("PING");
 
 }
 
 /*
-void sendUDPRefresh()
-{
-sendUDPMessage("REFRESH");
-  
-}
+  void sendUDPRefresh()
+  {
+  sendUDPMessage("REFRESH");
+
+  }
 */
 
 void processUDP() {
@@ -127,7 +156,7 @@ void processUDP() {
 
   runtime.udpmessages.clear();
 
-  //------------------- najpierw sprawdza, czy nie ma czegoś do wysłąnia ------------------- 
+  //------------------- najpierw sprawdza, czy nie ma czegoś do wysłąnia -------------------
 
 }
 
@@ -165,7 +194,7 @@ void processUDPMQTTCallback() {
 
   deserializeJson(doc, inchars);
 
-  //JsonObject root = doc.to<JsonObject>();  
+  //JsonObject root = doc.to<JsonObject>();
 
   /////////////////TU JAK DALEM RETURN TO DZIAŁAŁO/XXXXXXXXXXXXXXX
 
@@ -187,6 +216,7 @@ void processUDPMQTTCallback() {
     //char hostName_char[20];
     //strcpy (hostName_char,"XXXXXXXXXXXXXXXX");
     const char * hostName_char = runtime["hostName"];
+//    MQTTLogMessage(String("UDP received :") +messagetype +" / "+   hostName_char );
 
     const char * ip_char = runtime["ip"];
     const char * firmware_version_char = runtime["firmware_version"];
@@ -251,7 +281,7 @@ void processUDPMQTTCallback() {
     //strcpy(hostNamexxx,"XXXX");
     //strcpy(MDNSObjectUDP.hostName,hostname_char );
 
-    //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX TU JAK DALEM RETURN TO DZIAŁAŁO/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX 
+    //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX TU JAK DALEM RETURN TO DZIAŁAŁO/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
     //
 
@@ -277,12 +307,14 @@ void processUDPMQTTCallback() {
     //else strcpy(MDNSObjectUDP.uptime,"");
 
     //if (uptime_char!=NULL)strcpy(MDNSObjectUDPNew.uptime,uptime_char );
-    //else 
+    //else
     //strcpy(MDNSObjectUDP.uptime,"");
 
     //MQTTLogMessage(uptime_char);
 
     /////////////////TU JAK DALEM RETURN TO RESTART/XXXXXXXXXXXXXXX
+
+
 
     if (!WiFi.localIP().toString().equals(String(ip_char))) {
 
@@ -291,12 +323,73 @@ void processUDPMQTTCallback() {
       strcpy(MDNSObjectUDP.hostName, hostName_char);
       strcpy(MDNSObjectUDP.ip, ip_char);
       strcpy(MDNSObjectUDP.firmware_version, firmware_version_char);
-      if (spiffs_version_char!=NULL) strcpy(MDNSObjectUDP.spiffs_version, spiffs_version_char);
+      if (spiffs_version_char != NULL) strcpy(MDNSObjectUDP.spiffs_version, spiffs_version_char);
       else strcpy(MDNSObjectUDP.spiffs_version, "");
       strcpy(MDNSObjectUDP.timestamp, NTP.getTimeDateString().c_str());
       strcpy(MDNSObjectUDP.uptime, uptime_char);
 
+      ///////////////////////
+      //      MDNSObjectUDP.MDNSObjectRelays=MDNSObjectRelays;
+     
+
+
+     if (runtime.containsKey("relays"))
+
+    {
+ ///////////////////////relays///////////////////////
+
+//      MQTTLogMessage("Relays exist");
+
+      JsonArray relays = runtime["relays"];
+      byte size = relays.size();
+
+//           MQTTLogMessage(String(">>>>>>>>>>>>>>>>>>relays.size():") + relays.size());
+
+      //LinkedList<MDNSObjectRelay> MDNSObjectRelays;
+      //    MDNSObjectRelay MDNSObjectRelays[size];
+
+      for (int i = 0; i < size; i++) {
+
+        JsonObject relay = relays[i];
+
+        //const char * relay_id = relay["id"];
+        //const char * state = relay["state"];
+        //        MQTTLogMessage(String(">>>>>>>>>>>>>>>>>>>>>Init"));
+
+        //MDNSObjectRelay MDNSObjectRelayUDP;
+        //MDNSObjectRelayUDP.id=relay["id"];
+        //MDNSObjectRelayUDP.state=relay["state"];
+        //        MQTTLogMessage(String(">>>>>>>>>>>>>>>>>>>>>Adding ")+MDNSObjectRelayUDP.id+""+"/"+MDNSObjectRelayUDP.state);
+        //        strcpy(MDNSObjectUDP.MDNSObjectRelays[i].id, relay_id );
+        //        strcpy(MDNSObjectUDP.MDNSObjectRelays[i].state, state);
+        MDNSObjectUDP.MDNSObjectRelays[i].id = relay["id"];
+        
+        strcpy(MDNSObjectUDP.MDNSObjectRelays[i].internalName, relay["internalName"]);
+//        MQTTLogMessage(String("IN internalName ")+MDNSObjectUDP.MDNSObjectRelays[i].internalName);
+
+
+        MDNSObjectUDP.MDNSObjectRelays[i].state = relay["state"];
+        //        MDNSObjectUDP.MDNSObjectRelays.add(MDNSObjectRelayUDP);
+
+
+        //        MDNSObjectRelays[0] = MDNSObjectRelayUDP;
+        //        MQTTLogMessage(String(">>>>>>>>>>>>>>>>>>>>>Added Relays"));
+
+
+
+      }//  for (int i = 0; i < size; i++) {
+
+
+      ///////////////////////replays///////////////////////
+
+    }//if (runtime.containsKey("runtime"))
+  //  else       MQTTLogMessage("Relays dont exist");
+
+
+
+
       addMDNSObjectToList(MDNSObjectUDP);
+      //      MQTTLogMessage(String(">>>>>>>>>>>>>>>>>>>>>Added Object"));
     }
 
     //if (!WiFi.localIP().toString().equals(String(ip_char)   ) ) addMDNSObjectToList(doc);
@@ -320,18 +413,36 @@ void processUDPMQTTCallback() {
   if (messagetype.equals("REFRESH")) sendUDPPing();
 
   //    MQTTLogMessage("UDP received END");
+  MQTTLogMessage("UDP received END");
 
 }
 
 void addMDNSObjectToList(MDNSObject MDNSObjectUDP)
+
+
+
 //void addMDNSObjectToList(const char* hostName,const char* ip ,const char* firmware_version ,const char* timestamp ,const char* uptime)
 //void addMDNSObjectToList(JsonObject runtime)
 //void addMDNSObjectToList(DynamicJsonDocument doc)
 {
 
+//  MQTTLogMessage(String("addMDNSObjectToList START: ")+MDNSObjectUDP.hostName);
+
+
+/*
+    byte relays_size=2;
+
+    for (int ii = 0; ii < relays_size ; ii++) {
+
+      MQTTLogMessage(String("INNNN id: ")+MDNSObjectUDP.MDNSObjectRelays[ii].id );
+      MQTTLogMessage(String("INNNN internalName: ")+MDNSObjectUDP.MDNSObjectRelays[ii].internalName );
+    }//for
+*/
+
+
   /*
       Serial.printf("addMDNSObjectToList\n");
-//      Serial.printf("hostName [%s] ip [%s] firmware_version [%s] timestamp [%s] uptime [%s]\n",hostName, ip,firmware_version,timestamp, uptime);
+    //      Serial.printf("hostName [%s] ip [%s] firmware_version [%s] timestamp [%s] uptime [%s]\n",hostName, ip,firmware_version,timestamp, uptime);
       Serial.printf("hostName [%s] \n",hostName);
       Serial.printf("ip [%s]\n",ip);
       Serial.printf("firmware_version [%s]\n",firmware_version);
@@ -339,23 +450,23 @@ void addMDNSObjectToList(MDNSObject MDNSObjectUDP)
       Serial.printf("timestamp [%s]\n",timestamp);
 
       Serial.printf("addMDNSObjectToList 2\n");
-*/
+  */
   /*
         serializeJson(doc, Serial);
         Serial.printf("\n");
         serializeJson(doc["runtime"], Serial);
         Serial.printf("\n");
 
-  //JsonObject runtime= doc["runtime"]   ;
+    //JsonObject runtime= doc["runtime"]   ;
 
-  JsonObject runtime = doc.as<JsonObject>();
+    JsonObject runtime = doc.as<JsonObject>();
 
-  //iterate
-  // using C++11 syntax (preferred):
-  for (JsonPair kv : runtime) {
+    //iterate
+    // using C++11 syntax (preferred):
+    for (JsonPair kv : runtime) {
       Serial.println(kv.key().c_str());
       Serial.println(kv.value().as<char*>());
-  }
+    }
 
       Serial.println("hostName");
 
@@ -366,9 +477,9 @@ void addMDNSObjectToList(MDNSObject MDNSObjectUDP)
 
   /*
 
-  {"runtime":{"messagetype":"PING","hostName":"wemosxxx","ip":"192.168.1.211","firmware_version":null}}
+    {"runtime":{"messagetype":"PING","hostName":"wemosxxx","ip":"192.168.1.211","firmware_version":null}}
 
-  {"messagetype":"PING","hostName":"wemosxxx","ip":"192.168.1.211","firmware_version":null}
+    {"messagetype":"PING","hostName":"wemosxxx","ip":"192.168.1.211","firmware_version":null}
 
   */
   /*
@@ -401,7 +512,7 @@ void addMDNSObjectToList(MDNSObject MDNSObjectUDP)
 
     //  Serial.printf("%s\n",MDNSObjectI.hostName.c_str());
 
-    //  if ( MDNSObjectI.ip.equals(MDNSObjectUDP.ip) && MDNSObjectI.hostName.equals(MDNSObjectUDP.hostName)    ) 
+    //  if ( MDNSObjectI.ip.equals(MDNSObjectUDP.ip) && MDNSObjectI.hostName.equals(MDNSObjectUDP.hostName)    )
     if (
       strcmp(MDNSObjectI.ip, MDNSObjectUDP.ip) == 0 && strcmp(MDNSObjectI.hostName, MDNSObjectUDP.hostName) == 0
     )
@@ -409,11 +520,12 @@ void addMDNSObjectToList(MDNSObject MDNSObjectUDP)
     {
       MDNSObjects.set(i, MDNSObjectUDP);
       return;
-    } //if 
+    } //if
 
   } //for
 
   MDNSObjects.add(MDNSObjectUDP);
+  //MQTTLogMessage(String("addMDNSObjectToList END: ")+MDNSObjectUDP.hostName);
 
 }
 
@@ -421,7 +533,7 @@ String getDNSDevices() {
 
   String content = "";
   content = content + "{ \"MDNSDevices\" : [\n";
-  /*    
+  /*
     Serial.println("Sending mDNS query");
     int n = MDNS.queryService("esp", "tcp"); // Send out query for esp tcp services
     Serial.println("mDNS query done");
@@ -431,7 +543,7 @@ String getDNSDevices() {
 
       Serial.print(n);
       Serial.println(" service(s) found");
-      */
+  */
 
   int size = MDNSObjects.size();
 
@@ -441,15 +553,47 @@ String getDNSDevices() {
 
     MDNSObject MDNSObjecti = MDNSObjects.get(i);
 
+
+
+    ////////////////////////////////////////////////
+    String relays = ", \"relays\" : [";
+
+    byte relays_size = 4;//MDNSObjecti.MDNSObjectRelays.size();
+    byte pos = 0;
+    for (int ii = 0; ii < relays_size ; ii++) {
+      if (MDNSObjecti.MDNSObjectRelays[ii].id < 0) continue;
+
+      if (pos > 0)relays = relays + ",";
+
+      relays = relays +  "{ \"id\":\"" + MDNSObjecti.MDNSObjectRelays[ii].id + "\"" ;
+      relays = relays +  ", \"internalName\":\"" + MDNSObjecti.MDNSObjectRelays[ii].internalName + "\" " ;
+      relays = relays +  ", \"state\":\"" + MDNSObjecti.MDNSObjectRelays[ii].state + "\" " ;
+      relays = relays +  " }" ;
+
+      pos++;
+    }//for
+
+    relays = relays + "]";
+
+    //MQTTLogMessage(String("relayString: ")+MDNSObjecti.hostName+":"+ relays);
+    //MQTTLogMessage(String("pos: ")+pos);
+    //if (pos==0)relays="";
+    //MQTTLogMessage(String("relayStringNEW: ")+relays);
+
+    ///////////////////////////////////////////////
+
+
+
+
     //    MDNSTxt mdnsTxt=
 
     if (i > 0) content = content + ",";
 
-    content = content + "{" + "\"hostname\":\"" + MDNSObjecti.hostName + "\"," + "\"IP\":\"" + MDNSObjecti.ip + "\"" + 
-    ",\"firmware_version\":\"" + MDNSObjecti.firmware_version + "\""+
-    ",\"spiffs_version\":\"" + MDNSObjecti.spiffs_version + "\""+
-    
-    "  ,\"uptime\":\"" + MDNSObjecti.uptime + "\",\"timestamp\":\"" + MDNSObjecti.timestamp + "\"}\n";
+    content = content + "{" + "\"hostname\":\"" + MDNSObjecti.hostName + "\"," + "\"IP\":\"" + MDNSObjecti.ip + "\"" +
+              ",\"firmware_version\":\"" + MDNSObjecti.firmware_version + "\"" +
+              ",\"spiffs_version\":\"" + MDNSObjecti.spiffs_version + "\"" +
+
+              "  ,\"uptime\":\"" + MDNSObjecti.uptime + "\",\"timestamp\":\"" + MDNSObjecti.timestamp + "\"     " + relays + "   }\n";
 
     /*
           Serial.print(i + 1);
@@ -461,6 +605,9 @@ String getDNSDevices() {
           Serial.print(MDNS.port(i));
           Serial.println(")");
     */
+
+    //      content = content +relays;
+
   } //for
 
   content = content + " ]}";

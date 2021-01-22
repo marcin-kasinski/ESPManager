@@ -50,7 +50,7 @@ void prepareHeader(int code,
 
 
 /*
-int getWebFileSize(char * path) {
+  int getWebFileSize(char * path) {
 
   MQTTLogMessage(String("getWebFileSize ") + path);
 
@@ -74,7 +74,7 @@ int getWebFileSize(char * path) {
 
 
 
- int len = http.getSize();
+  int len = http.getSize();
 
      // create buffer for read
         uint8_t buff[512] = { 0 };
@@ -105,7 +105,7 @@ int getWebFileSize(char * path) {
 
 
 
-//  MQTTLogMessage(String ("[HTTP] size...") + len);
+  //  MQTTLogMessage(String ("[HTTP] size...") + len);
   MQTTLogMessage(String ("[HTTP] size...") + size);
 
 
@@ -114,7 +114,7 @@ int getWebFileSize(char * path) {
 
 
   return len;
-}
+  }
 
 */
 
@@ -165,28 +165,36 @@ int httpServerSendFileContent(char * path) {
 
 void readSpiffsVersion() {
 
+  MQTTLogMessage("readSpiffsVersion START");
   //      Serial.println("readSpiffsVersion()" );
   //    MQTTLogMessage(String("error reading ")+path);
 
   String version = "";
 
   int retfnc = readFullFile("/conf/version.txt", version);
+
   version.trim();
+
   conf.spiffs_version = version.toFloat();
   //MQTTLogMessage(String("SPIFFS version:" )+conf.spiffs_version);
   //addAppLogMessage("SPIFFS version: "+conf.spiffs_version);
+  MQTTLogMessage("readSpiffsVersion END");
 
 }
 
 int readFullFile(char * path, String & content) {
 
-  //MQTTLogMessage(String("readFullFile :" )+path);
+  content=String("");
+
+  MQTTLogMessage(String("readFullFile START :" ) + path);
 
   long milisstart = millis();
 
   int filesize = getFileSize(path);
 
   //Serial.printf("filesize [%d]\n",filesize);
+
+  MQTTLogMessage(String("readFullFile filesize :" ) + filesize );
 
   if (filesize == -1) return -1;
 
@@ -217,8 +225,19 @@ int readFullFile(char * path, String & content) {
   String s;
   //while (s!=NULL)
 
-  while (content.length() <= filesize) {
-    s = f.readStringUntil('\n');
+//  MQTTLogMessage("readFullFile before loop" );
+
+
+  //while (content.length() <= filesize) {
+  while (f.available()) {
+//  MQTTLogMessage("readFullFile in loop 1" +content +" / "+ index);
+
+//  if (index>3) break;
+
+    char c = f.read();
+    //s = f.readStringUntil('\n');
+    content.concat(c);
+//  MQTTLogMessage("readFullFile before loop 2" +content);
     //s=f.readStringUntil('---');
 
     //char data[1000];
@@ -226,9 +245,11 @@ int readFullFile(char * path, String & content) {
     //Serial.printf("s [%s]\n",s.c_str());
     //Serial.printf("s [%s]\n",data);
 
-    sum = sum + s.length();
+  //  sum = sum + s.length();
 
-    content = content + s + '\n';
+//  MQTTLogMessage("readFullFile before loop 3" +content);
+//    content = content + s + '\n';
+//  MQTTLogMessage("readFullFile before loop 4" +content);
 
     //Serial.printf("[index=%d][suma znakow %d]dlugosc [suma znakow calosc  %d/suma znakow w linii %d]],filesize [%d],content.length()[%d] , f.position() [%d]\n",index,sum,content.length(),s.length(), filesize, content.length(), f.position());
     //Serial.print("przeczytano linie [");
@@ -255,6 +276,8 @@ int readFullFile(char * path, String & content) {
   //Serial.printf("Content [%s] milis\n",content.c_str());
 
   //Serial.printf("readFullFile end\n");
+
+  MQTTLogMessage("readFullFile END");
 
   return 1;
 
@@ -296,7 +319,10 @@ int readFullFile(char * path, String & content) {
   return 0;
   }
 */
-bool saveFile(String path, String indata) {
+bool saveFile(char *path, String indata) {
+
+  MQTTLogMessage(String("saveFile [")+path+"] START");
+//  MQTTLogMessage(String("saveFile : ") + indata);
 
   //Serial.printf("--------------saveFile [%s]\n[%s]\n",path.c_str(), indata.c_str());
 
@@ -313,16 +339,21 @@ bool saveFile(String path, String indata) {
   //MQTTLogMessage(String("saveFile : ") + path + String(", length : ") + indata.length() + String(" , data: ") + indata);
   //    addAppLogMessage(String("saveFile : ")+indata );
 
-  File f = SPIFFS.open(path.c_str(), "w");
+
+  File f = SPIFFS.open(path, "w");
+
 
   if (!f) {
     //    Serial.printf("Save file error [%s]\n",path.c_str() );
-    MQTTLogMessage(String("Save file error : ") + path.c_str());
+    MQTTLogMessage(String("Save file error : ") + path);
 
     return false;
   }
 
+
+
   f.println(indata.c_str());
+
 
   //if (conf.serialLogging==true) Serial.printf("saved %s \n",indata.c_str());
 
@@ -332,5 +363,6 @@ bool saveFile(String path, String indata) {
 
   //    MQTTLogMessage(String("saveFile END") );
 
+  MQTTLogMessage(String("saveFile END"));
   return true;
 }

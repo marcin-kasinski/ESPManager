@@ -150,6 +150,7 @@ return true;
 
 */
 boolean setWIFIClient() {
+    MQTTLogMessage("setWIFIClient START");
   /*
   if (conf.wifi_ssid==NULL) 
   {

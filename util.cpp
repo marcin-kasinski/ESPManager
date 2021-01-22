@@ -38,6 +38,7 @@ ESP8266WebServer httpServer(80);
 void addAppLogMessage(String message) {
 
   //  Serial.printf("addAppLogMessage [%s]\n",message.c_str());
+  //   MQTTLogMessage("addAppLogMessage START");
 
   AppLog appLogObject;
 
@@ -54,6 +55,7 @@ void addAppLogMessage(String message) {
   } //if
 
   appLogs.add(appLogObject);
+  //  MQTTLogMessage("addAppLogMessage END");
 
 }
 
@@ -110,10 +112,10 @@ bool isupdateSunriseSunsetUpToDate() {
   if (runtime.sunset_update_time.indexOf(current_date) > 0) {
     //    Serial.printf("sunset time is up to date\n");
     //    MQTTLogMessage("Sunset time is up to date. Update time: " + runtime.sunset_update_time);
-//    MQTTLogMessage("Sunset time is up to date");
+    //    MQTTLogMessage("Sunset time is up to date");
     ret = true;
   }
-//  MQTTLogMessage("Sunset time is up to date? :"+String(ret));
+  //  MQTTLogMessage("Sunset time is up to date? :"+String(ret));
   return ret;
 }
 
@@ -165,7 +167,7 @@ void getSunriseSunset(String key, String city) {
 
   //jeśli nie ma aktualnej daty, to wychodzi
   if (NTP.getTimeDateString().equals("Time not set")) {
-        MQTTLogMessage("No NTP info. Exiting");
+    MQTTLogMessage("No NTP info. Exiting");
 
     return;
   }
@@ -230,17 +232,17 @@ void getSunriseSunset(String key, String city) {
   MQTTLogMessage(String("getSunset ret code ") + httpRetCode );
 
   //Serial.printf("ret code [%d]\n", httpRetCode );
-  byte loopindex =0;
+  byte loopindex = 0;
 
   String payload;
   if (httpRetCode == HTTP_CODE_OK) {
     //  payload = client.getString();
 
-//    MQTTLogMessage("getSunriseSunset payload");
+    //    MQTTLogMessage("getSunriseSunset payload");
 
     // get lenght of document (is -1 when Server sends no Content-Length header)
     int len = http.getSize();
-//    MQTTLogMessage(String ("init len:") + len);
+    //    MQTTLogMessage(String ("init len:") + len);
 
     // create buffer for read
     uint8_t buff[512] = {
@@ -251,10 +253,10 @@ void getSunriseSunset(String key, String city) {
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
 
-  
+
     // read all data from server
-    while (http.connected() && (len > 0 || len == -1 || loopindex>100)) {
-//    while (http.connected() && (len > 0 || len == -1 )) {
+    while (http.connected() && (len > 0 || len == -1 || loopindex > 100)) {
+      //    while (http.connected() && (len > 0 || len == -1 )) {
       loopindex++;
       //while (http.connected() && len >= 0) {
 
@@ -336,7 +338,7 @@ void getSunriseSunset(String key, String city) {
       runtime.sunset_update_time = NTP.getTimeDateString();
 
       if (conf.discoverable == true) sendUDPPing();
-  
+
     }
     //    Serial.printf("runtime.sunset_update_time %s\n", runtime.sunset_update_time.c_str());
     //    MQTTLogMessage("sunset_update_time " + runtime.sunset_update_time);
@@ -370,7 +372,7 @@ void getSunriseSunset(String key, String city) {
     //payload.trim();
   */
   //  Serial.printf("getSunset end\n");
-  MQTTLogMessage(String("getSunriseSunset end ")+loopindex);
+  MQTTLogMessage(String("getSunriseSunset end ") + loopindex);
   http.end();
 
 
@@ -981,23 +983,31 @@ void processAPReboot() {
 */
 
 bool isValidJson(String in ) {
+/*
+//    MQTTLogMessage("isValidJson");
 
-  //    Serial.println("isValidJson0");
+  //      Serial.println("isValidJson0");
   //    Serial.println(in.length());
   //    Serial.println(in.c_str());
 
   char inchars[ in .length() + 1];
   strcpy(inchars, in .c_str());
+  //      Serial.println("isValidJson1");
 
   DynamicJsonDocument doc( in .length() + 1);
-  auto error = deserializeJson(doc, inchars);
+  //     Serial.println("isValidJson2");
+  DeserializationError  error = deserializeJson(doc, inchars);
+  //      Serial.println("isValidJson3");
 
   if (error) {
     MQTTLogMessage(String("Failed to parse string"));
+    MQTTLogMessage(String("Failed to parse string:")+  ""  );
     return false;
   }
   JsonObject json = doc.to < JsonObject > ();
 
+//    MQTTLogMessage("isValidJson END");
+*/
   return true;
 }
 
@@ -1016,8 +1026,11 @@ bool isValidJson(String in ) {
 */
 
 bool loadConfigFromString(String in ) {
-  
-  //Serial.printf("loadConfigFromString... [%s]\n", in.c_str());
+
+
+  MQTTLogMessage("loadConfigFromString START");
+  MQTTLogMessage(in);
+  //  Serial.printf("loadConfigFromString... [%s]\n", in.c_str());
 
   if (isValidJson( in ) == false) return false;
 
@@ -1080,7 +1093,7 @@ bool loadConfigFromString(String in ) {
 
   const char * hostName = json["hostName"];
 
-  //MQTTLogMessage(doc["hostName"]);
+//  MQTTLogMessage(String ("hostName :") + hostName );
 
   String hostName_String = hostName;
 
@@ -1093,6 +1106,8 @@ bool loadConfigFromString(String in ) {
     sprintf(chip, "%06X", ESP.getChipId());
     conf.hostName = String("DEVICE_") + chip;
   }
+
+
 
   //  const char* firmware_version = json["firmware_version"];
   //if (firmware_version !=NULL) conf.firmware_version= firmware_version;
@@ -1108,6 +1123,7 @@ bool loadConfigFromString(String in ) {
   if (broadcast != NULL) conf.broadcast = broadcast;
 
   const char * web_password = json["web_password"];
+
 
   if (web_password != NULL) conf.web_password = String(web_password);
 
@@ -1127,8 +1143,11 @@ bool loadConfigFromString(String in ) {
 
   }
 
+
+
   const char * wifi_password = json["wifi_password"];
   String wifi_password_String = wifi_password;
+
 
   if (!wifi_password_String.equals("")) {
     conf.wifi_password = wifi_password;
@@ -1141,6 +1160,7 @@ bool loadConfigFromString(String in ) {
   //Serial.printf("MQTTLogXXXXXXXXXXX [%s]\n",String(json["wifi_ssid"]).c_str());
 
   // Serial.printf("json[\"wifi_ssid\"] %s\n",json["wifi_ssid"] );
+
 
   byte size = relays.size();
   for (int i = 0; i < size; i++) {
@@ -1182,6 +1202,8 @@ bool loadConfigFromString(String in ) {
     //Serial.printf("relay_switch_type  %s   conf.relays[i].relay_switch_type %d\n",relay_switch_type .c_str(),conf.relays[i].relay_switch_type);
 
   }
+
+
 
   /*
 
@@ -1247,6 +1269,7 @@ bool loadConfigFromString(String in ) {
   if (temp["tempsensor_pin"] != NULL) conf.temperatureSensor_tempsensor_pin = temp["tempsensor_pin"];
   conf.temperatureSensor_domoticz_device_idx = temp["domoticz_device_idx"];
 
+/*
   JsonObject rgbled = json["rgbled"];
   conf.rgbled.state = rgbled["state"];
   conf.rgbled.enable = rgbled["enable"];
@@ -1255,7 +1278,7 @@ bool loadConfigFromString(String in ) {
   conf.rgbled.b = rgbled["b"];
   conf.rgbled.w = rgbled["w"];
   conf.rgbled.wa = rgbled["wa"];
-
+*/
   //MQTTLogMessage(String("conf.rgbled.enable loaded ")+String(conf.rgbled.enable) );
   //Serial.printf("conf.rgbled.enable loaded  %d\n",conf.rgbled.enable);
 
@@ -1266,6 +1289,7 @@ bool loadConfigFromString(String in ) {
 
   const char * ntpserver = json["ntpserver"];
 
+
   if (ntpserver != NULL) conf.ntpserver = ntpserver;
 
   const char * OTA_password = json["OTA_password"];
@@ -1274,17 +1298,17 @@ bool loadConfigFromString(String in ) {
   //const char * OTA_enable = json["OTA_enable"];
 
 
-  //if (json["security_enable"] != NULL) 
-  conf.security_enable= json["security_enable"];
+  //if (json["security_enable"] != NULL)
+  conf.security_enable = json["security_enable"];
 
   //if (json["security_enable"] != NULL) conf.security_enable = json["security_enable"];
 
   //if (json["security_enable"] != NULL)  Serial.printf("json[security_enable]  \n");
 
-  
+
   //MQTTLogMessage(String("conf.security_enable loaded ")+String(conf.security_enable) );
-  
-  
+
+
   if (json["OTA_enable"] != NULL) conf.OTA_enable = json["OTA_enable"];
 
   //const char * discoverable = json["discoverable"];
@@ -1301,10 +1325,11 @@ bool loadConfigFromString(String in ) {
 
 
 
+
   const char * MQTT_enable = json["MQTT_enable"];
 
-  if (json["MQTT_enable"] != NULL) conf.MQTT_enable= json["MQTT_enable"];
-//  MQTTLogMessage(String("MQTT_enable ")+String(conf.MQTT_enable) );
+  if (json["MQTT_enable"] != NULL) conf.MQTT_enable = json["MQTT_enable"];
+  //  MQTTLogMessage(String("MQTT_enable ")+String(conf.MQTT_enable) );
 
 
   const char * MQTT_hostName = json["MQTT_hostName"];
@@ -1321,6 +1346,8 @@ bool loadConfigFromString(String in ) {
 
   const char * Domoticz_password = json["Domoticz_password"];
   if (Domoticz_password != NULL) conf.Domoticz_password = Domoticz_password;
+
+
 
   JsonArray timers = json["timers"];
 
@@ -1342,8 +1369,37 @@ bool loadConfigFromString(String in ) {
     String month = timer["month"];
     String weekday = timer["weekday"];
 
-    timer1.addTask("USER", timer["device_id"], timer["function_name"], timer["function_name_parameter"], minute, hour, day, month, weekday);
+    //    String function_name_parameter="";
+
+
+    const char * function_name_parameter = timer["function_name_parameter"];
+    String function_name_parameter_String = function_name_parameter;
+    function_name_parameter_String.trim();
+
+
+    //if (function_name_parameter ==NULL)   MQTTLogMessage("function_name_parameter IS NULL");
+
+    //else MQTTLogMessage("function_name_parameter IS NOT NULL");
+    //if (function_name_parameter_String .equals(""))  MQTTLogMessage("function_name_parameter equals space");
+
+    //  MQTTLogMessage(String("LOADED : [")+""+String(timer["function_name"])+" "+function_name_parameter_String+"]");
+    //  MQTTLogMessage(String("LOADED : [")+function_name_parameter_String+"]");
+    //  if (!function_name_parameter_String.equals(""))
+    //    else     function_name_parameter_String ="";
+
+
+    //  MQTTLogMessage(String("CONTAINS ")+timer.containsKey("function_name_parameter"));
+    //  MQTTLogMessage(String("CONTAINS ")+timer.containsKey("function_name_parameter"));
+
+
+    //if (timer.containsKey("function_name_parameter"))   timer1.addTask("USER", timer["device_id"], timer["function_name"], timer["function_name_parameter"], minute, hour, day, month, weekday);
+
+    //else
+    timer1.addTask("USER", timer["device_id"], timer["function_name"], function_name_parameter_String, minute, hour, day, month, weekday);
+
   }
+
+  MQTTLogMessage("loadConfigFromString END");
 
   //JsonObject relay0 = relays[0];
 
@@ -1410,8 +1466,8 @@ bool loadConfig() {
 }
 
 bool saveConfig() {
-  //
-  MQTTLogMessage(String("saveConfig"));
+
+  MQTTLogMessage(String("saveConfig START"));
 
   //  if (conf.serialLogging == true) Serial.printf("saveConfig() start %s\n", CONF_FILE );
 
@@ -1433,6 +1489,7 @@ bool saveConfig() {
   json["wifi_password"] = conf.wifi_password;
 
   //array
+
 
   JsonArray relays = json.createNestedArray("relays");
 
@@ -1465,6 +1522,7 @@ bool saveConfig() {
 
   }
 
+
   JsonObject temp = json.createNestedObject("temperaturesensor");
 
   temp["tempsensor_pin"] = conf.temperatureSensor_tempsensor_pin;
@@ -1472,6 +1530,7 @@ bool saveConfig() {
 
   // Serial.printf("Saving RGB %d\n",conf.rgbled.rgbled_state);
 
+/*
   JsonObject rgbled = json.createNestedObject("rgbled");
 
   rgbled["enable"] = conf.rgbled.enable;
@@ -1481,7 +1540,7 @@ bool saveConfig() {
   rgbled["b"] = conf.rgbled.b;
   rgbled["w"] = conf.rgbled.w;
   rgbled["wa"] = conf.rgbled.wa;
-
+*/
   //MQTTLogMessage(String("conf.rgbled.enable saved ")+String(conf.rgbled.enable) );
   //MQTTLogMessage(String("conf.rgbled.state saved ")+String(conf.rgbled.state) );
 
@@ -1494,10 +1553,11 @@ bool saveConfig() {
 
   json["OTA_password"] = conf.OTA_password;
 
-  
+
+
   json["security_enable"] = conf.security_enable;
 
-    //MQTTLogMessage(String("conf.security_enable ")+String(conf.security_enable) );
+  //MQTTLogMessage(String("conf.security_enable ")+String(conf.security_enable) );
 
   json["OTA_enable"] = conf.OTA_enable;
 
@@ -1517,6 +1577,9 @@ bool saveConfig() {
 
   int listSize = timer1.cronObjects.size();
 
+
+
+
   //  Serial.printf(" listSize %d\n",listSize );
   for (int i = 0; i < listSize; i++) {
 
@@ -1530,6 +1593,11 @@ bool saveConfig() {
 
     timer["device_id"] = timer1.cronObjects.get(i).device_id;
     timer["function_name"] = timer1.cronObjects.get(i).function_name;
+
+    //    MQTTLogMessage(String("saveConfig 2"));
+    //    MQTTLogMessage(String("SAVING function_name:[")+timer1.cronObjects.get(i).function_name+"]");
+    //    MQTTLogMessage(String("SAVING function_name_parameter:[")+timer1.cronObjects.get(i).function_name_parameter+"]");
+
     timer["function_name_parameter"] = timer1.cronObjects.get(i).function_name_parameter;
 
     timer["minute"] = cronObject.minute_logical;
@@ -1540,6 +1608,11 @@ bool saveConfig() {
 
   }
 
+
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  //return  true;
+
   //  Serial.printf("JSON timers.length()  %d\n", timers.size() );
 
   String str;
@@ -1549,26 +1622,30 @@ bool saveConfig() {
   //MQTTLogMessage(String("Str len:"+len) );
 
   //  json.prettyPrintTo(str);
+
   serializeJsonPretty(json, str);
+
 
   //  Serial.printf("save in util--------------------  %s\n", str.c_str() );
 
   //  char data[1500];
   //  json.printTo(data,1500);
 
-//    MQTTLogMessage(String("Data ")+str );
+  //    MQTTLogMessage(String("Data ")+str );
 
   //    Serial.printf("Saving \n%s\n",str.c_str());
 
   //SPIFFS.remove(CONF_FILE );
 
-    //MQTTLogMessage(String("saving")+str );
+  //MQTTLogMessage(String("saving")+str );
+  //    MQTTLogMessage(String("saveConfig 4"));
 
   bool savefileret = saveFile(CONF_FILE, str);
 
+
   if (savefileret == false) return false;
 
-  MQTTLogMessage(String("Conf saved"));
+  MQTTLogMessage(String("saveConfig END"));
 
   return true;
   //  return false;
@@ -1587,7 +1664,7 @@ bool processConfig() {
 }
 
 /*
-void sendToDomoticz() {
+  void sendToDomoticz() {
   // int status = WL_IDLE_STATUS;     // the Wifi radio's status
   WiFiClient client;
 
@@ -1624,7 +1701,7 @@ void sendToDomoticz() {
 
   //Serial.println("Temp sent");
 
-}
+  }
 */
 void initWWW() {
   //ESP8266WebServer httpServer(80);
@@ -1770,7 +1847,7 @@ void initOTA() {
     else if (error == OTA_END_ERROR) MQTTLogMessage("End Failed");
   });
 
-  if (conf.security_enable== true) ArduinoOTA.setPassword(conf.OTA_password.c_str());
+  if (conf.security_enable == true) ArduinoOTA.setPassword(conf.OTA_password.c_str());
 
   ArduinoOTA.setHostname(conf.hostName.c_str());
 

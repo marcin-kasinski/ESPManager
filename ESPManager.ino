@@ -1,3 +1,4 @@
+#define MQTT_MAX_PACKET_SIZE 1024
 
 //void ICACHE_RAM_ATTR handleInterrupt();
 
@@ -44,6 +45,9 @@
 char * update_path = "/firmware";
 
 void setup() {
+
+  delay(1000);
+  MQTTLogMessage("setup START");
   addAppLogMessage("Device started");
 
   static WiFiEventHandler e1, e2;
@@ -55,16 +59,19 @@ void setup() {
   SPIFFS.begin();
   bool processConfigret = processConfig();
 
-  initDevices();
 
   WiFi.hostname(conf.hostName);
 
   readSpiffsVersion();
 
+
+
   int retsetWIFIClient = 0;
 
   //if (processConfigret==true) 
   retsetWIFIClient = setWIFIClient();
+
+
 
   if (conf.OTA_enable == true) initOTA();
   if (conf.MQTT_enable == true) initMQTT();
@@ -169,13 +176,13 @@ if (conf.security_enable== true)
 
 
   initUDP();
+  initDevices();
 
 MQTTLogMessage("SETUP END");
   
 }
 
 void loop() {
-
 //  processRGBLed();
 
   //processWIFIRepeater();

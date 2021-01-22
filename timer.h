@@ -42,7 +42,7 @@ struct CronObject {
   String weekday_logical="*";
 
   byte device_id;
-  byte xxx;
+  //byte xxx;
   String function_name;
   String function_name_parameter;
 
@@ -50,7 +50,7 @@ struct CronObject {
 
 };
 
-typedef std::function<void(CronObject)> THandlerFunction_Callback;
+//typedef std::function<void(CronObject)> THandlerFunction_Callback;
 
 
 class ITZoneTimer
