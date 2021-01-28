@@ -33,7 +33,7 @@ bool initNTPClient() {
   //    Serial.printf("conf.ntpServerName [%s]\n",conf.ntpServerName.c_str());
 
   NTP.begin(conf.ntpserver.c_str(), 1, true);
-  NTP.setInterval(3600);
+  NTP.setInterval(3600); //1 hour interval
 
   //delay(5000);
 

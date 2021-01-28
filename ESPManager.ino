@@ -171,7 +171,7 @@ if (conf.security_enable== true)
 
   timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time","", "Random 0/59/1", "Range 0-21", "*", "*", "*");
   //timer1.addTask("SYSTEM", -1, "Get sunrise and sunset time", "*", "*", "*", "*", "*");
-  if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster","", "Every 20", "*", "*", "*", "*");
+  if (conf.discoverable == true) timer1.addTask("SYSTEM", -1, "Send PING to cluster","", "Every 10", "*", "*", "*", "*");
 
 
 

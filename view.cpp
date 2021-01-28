@@ -1182,7 +1182,7 @@ void handleConfUploadAfterFinished() {
   MQTTLogMessage("handleConfUploadAfterFinished");
   MQTTLogMessage(savedConf);
 
-  saveFile(CONF_FILE, savedConf);
+  saveFile(CONF_FILE, savedConf.c_str());
 
   httpServer.sendHeader("Location", "/");
   httpServer.sendHeader("Cache-Control", "no-cache");

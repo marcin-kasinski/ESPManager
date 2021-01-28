@@ -83,14 +83,14 @@ void timer_func_firmware_update_check(CronObject cronObject) {
 }
 
 void timer_func_relayOn(CronObject cronObject) {
-//  MQTTLogMessage(String("TIMER relayOn executed device_id =") + cronObject.device_id);
+  //  MQTTLogMessage(String("TIMER relayOn executed device_id =") + cronObject.device_id);
   addAppLogMessage(String("TIMER relayOn executed [") + cronObject.device_id + "]");
   //Serial.printf("TIMER relayOn executed [%d] \n",cronObject.device_id);
   //conf.relays[device_id].relay_state=1;
 
   setRelayStatePermanently(cronObject.device_id, 1);
   //Serial.printf("TIMER relayOn executed END\n");
-//  MQTTLogMessage(String("TIMER relayOn executed END"));
+  //  MQTTLogMessage(String("TIMER relayOn executed END"));
 }
 
 void timer_func_relayOff(CronObject cronObject) {
@@ -135,10 +135,10 @@ void timer_func_getSunriseSunsetTime(CronObject cronObject) {
 void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift, String shift_value) {
 
   if (shift_value.equals("")) return;
-//  MQTTLogMessage("set_hour_and_time_with_shift START");
-//  MQTTLogMessage(String ("shift_value =") + shift_value);
-//  MQTTLogMessage(String ("IN hour_after_shift =") + hour_after_shift);
-//  MQTTLogMessage(String ("IN min_after_shift =") + min_after_shift);
+  //  MQTTLogMessage("set_hour_and_time_with_shift START");
+  //  MQTTLogMessage(String ("shift_value =") + shift_value);
+  //  MQTTLogMessage(String ("IN hour_after_shift =") + hour_after_shift);
+  //  MQTTLogMessage(String ("IN min_after_shift =") + min_after_shift);
 
   //minus, czy plus
   byte shift_mode = shift_value.charAt(0);
@@ -148,33 +148,33 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
   byte shift_hour = 0;
   byte shift_min = 0;
 
-//  MQTTLogMessage("1");
+  //  MQTTLogMessage("1");
 
   //jeśli jest minuta i godzina
   if (space_location != 255)
   {
-//  MQTTLogMessage("2a");
+    //  MQTTLogMessage("2a");
 
     shift_hour = shift_value.substring(1, h_location).toInt();
     shift_min = shift_value.substring(space_location, shift_value.length() - 1).toInt();
-//  MQTTLogMessage("2b");
+    //  MQTTLogMessage("2b");
   }
   // jest tylko godzina
   else if (h_location != 255)
   {
-//  MQTTLogMessage("3a");
+    //  MQTTLogMessage("3a");
 
     shift_hour = shift_value.substring(1, shift_value.length()).toInt();
-//  MQTTLogMessage("3b");
+    //  MQTTLogMessage("3b");
 
   }
   // jest tylko minuta
   else if (m_location != 255)
   {
-//  MQTTLogMessage("4a");
+    //  MQTTLogMessage("4a");
 
     shift_min = shift_value.substring(1, shift_value.length()).toInt();
-//  MQTTLogMessage("4b");
+    //  MQTTLogMessage("4b");
 
   }
 
@@ -183,7 +183,7 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
 
   if (shift_mode == '-')
   {
-//    MQTTLogMessage(String ("MINUS START"));
+    //    MQTTLogMessage(String ("MINUS START"));
 
     if (shift_min > min_after_shift)
     {
@@ -194,12 +194,12 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
     else  min_after_shift = min_after_shift - shift_min;
 
     hour_after_shift = hour_after_shift - shift_hour;
-//    MQTTLogMessage(String ("MINUS END"));
+    //    MQTTLogMessage(String ("MINUS END"));
   }
 
   else if (shift_mode == '+')
   {
-//    MQTTLogMessage(String ("PLUS START"));
+    //    MQTTLogMessage(String ("PLUS START"));
     hour_after_shift = hour_after_shift + shift_hour;
 
     if ((shift_min + min_after_shift) > 60)
@@ -210,19 +210,19 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
     }
     else  min_after_shift = min_after_shift + shift_min;
 
-//    MQTTLogMessage(String ("PLUS END"));
+    //    MQTTLogMessage(String ("PLUS END"));
 
   }
 
-//    MQTTLogMessage(String ("shift_min =") + shift_min);
-//    MQTTLogMessage(String ("shift_hour =") + shift_hour);
-//  MQTTLogMessage(String ("hour_after_shift =") + hour_after_shift);
-//  MQTTLogMessage(String ("min_after_shift =") + min_after_shift);
-//    MQTTLogMessage(String ("shift_value =") + shift_value);
-//  MQTTLogMessage(String ("shift_mode =") + shift_mode);
+  //    MQTTLogMessage(String ("shift_min =") + shift_min);
+  //    MQTTLogMessage(String ("shift_hour =") + shift_hour);
+  //  MQTTLogMessage(String ("hour_after_shift =") + hour_after_shift);
+  //  MQTTLogMessage(String ("min_after_shift =") + min_after_shift);
+  //    MQTTLogMessage(String ("shift_value =") + shift_value);
+  //  MQTTLogMessage(String ("shift_mode =") + shift_mode);
 
 
-//  MQTTLogMessage("set_hour_and_time_with_shift END");
+  //  MQTTLogMessage("set_hour_and_time_with_shift END");
 
 
   //min_after_shift=111;
@@ -232,9 +232,9 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
 void timer_func_relayOnAtSunset(CronObject cronObject) {
 
 
-  if (runtime.sunset_hour==0 && runtime.sunset_minute==0) return;
-//  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset START device_id =") + cronObject.device_id);
-  
+  if (runtime.sunset_hour == 0 && runtime.sunset_minute == 0) return;
+  //  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset START device_id =") + cronObject.device_id);
+
   byte hour_after_shift = runtime.sunset_hour;
   byte min_after_shift = runtime.sunset_minute;
 
@@ -245,12 +245,12 @@ void timer_func_relayOnAtSunset(CronObject cronObject) {
     //conf.relays[device_id].relay_state=1;
     setRelayStatePermanently(cronObject.device_id, 1);
   }
-//  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset END device_id =") + cronObject.device_id);
+  //  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset END device_id =") + cronObject.device_id);
 }
 
 void timer_func_relayOffAtSunrise(CronObject cronObject) {
-  if (runtime.sunset_hour==0 && runtime.sunset_minute==0) return;
-//  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise START device_id =") + cronObject.device_id);
+  if (runtime.sunset_hour == 0 && runtime.sunset_minute == 0) return;
+  //  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise START device_id =") + cronObject.device_id);
 
   byte hour_after_shift = runtime.sunrise_hour;
   byte min_after_shift = runtime.sunrise_minute;
@@ -260,7 +260,7 @@ void timer_func_relayOffAtSunrise(CronObject cronObject) {
   if (hour_after_shift == runtime.curr_hour && min_after_shift == runtime.curr_min) {
     setRelayStatePermanently(cronObject.device_id, 0);
   }
-//  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise END device_id =") + cronObject.device_id);
+  //  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise END device_id =") + cronObject.device_id);
 }
 
 /*
@@ -373,6 +373,8 @@ int ITZoneTimer::getCurrentYear() {
 bool ITZoneTimer::isElementInList(String element, String list) {
   bool ret = false;
 
+//  MQTTLogMessage(String ("isElementInList START ") + element + " / " + list);
+
   //Serial.printf("isElementInList element [%s] list = [%s] \n",element.c_str(),list.c_str());
 
   char str[list.length()];
@@ -395,6 +397,8 @@ bool ITZoneTimer::isElementInList(String element, String list) {
   }
 
   //  Serial.printf("isElementInList ret [%d]\n",ret);
+
+//  MQTTLogMessage(String ("isElementInList END ") + ret);
 
   return ret;
 }
@@ -485,10 +489,10 @@ bool ITZoneTimer::isEvery(String instr, byte in_value) {
 
 void ITZoneTimer::processCronObject(CronObject cronObject) {
 
-//////////////////////////////////////////////////
+  //////////////////////////////////////////////////
 
 
-//    MQTTLogMessage(String ("processCronObject START [")+cronObject.function_name+"]");
+//  MQTTLogMessage(String ("processCronObject START [") + cronObject.function_name + "] " + cronObject.hour);
 
   /*
     byte curr_hour= getCurrentHour();
@@ -526,10 +530,10 @@ void ITZoneTimer::processCronObject(CronObject cronObject) {
 
     //THandlerFunction_Callback fn_Callback;
 
-//    MQTTLogMessage(String ("TIMER Processing START [")+cronObject.function_name+"]");
-//    MQTTLogMessage(String ("TIMER Processing START [")+cronObject.function_name_parameter+"]");
+    //    MQTTLogMessage(String ("TIMER Processing START [")+cronObject.function_name+"]");
+    //    MQTTLogMessage(String ("TIMER Processing START [")+cronObject.function_name_parameter+"]");
 
-//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
     if (cronObject.function_name.equals("Relay on")) timer_func_relayOn(cronObject);
 
 
@@ -545,18 +549,18 @@ void ITZoneTimer::processCronObject(CronObject cronObject) {
     else if (cronObject.function_name.equals("Process relay led"))  timer_func_processRelayLed(cronObject);
 
 
-//    MQTTLogMessage("TIMER Processing BEFORE EXEC");
-//////XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/////////
-    
+    //    MQTTLogMessage("TIMER Processing BEFORE EXEC");
+    //////XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX/////////
 
 
- //   fn_Callback(cronObject);
 
-//    MQTTLogMessage("TIMER Processing END");
+    //   fn_Callback(cronObject);
+
+    //    MQTTLogMessage("TIMER Processing END");
 
     //Serial.printf("EXECUTING TIMER END [%s] [%s] [%s] [%d]\n",cronObject.type.c_str(), cronObject.function_name.c_str(),cronObject.minute.c_str(), curr_min);
   }
-//    MQTTLogMessage("processCronObject END");
+//  MQTTLogMessage("processCronObject END");
 }
 
 uint8_t ITZoneTimer::getDayOfWeek() {
@@ -589,9 +593,9 @@ uint8_t ITZoneTimer::getDayOfWeek() {
 
 void ITZoneTimer::process() {
 
-//    MQTTLogMessage("process START");
+  //    MQTTLogMessage("process START");
 
-  
+
   //delay (1000);
   //XXXXXXXXXXXXXX
   //Serial.printf("process START\n");
@@ -659,7 +663,7 @@ void ITZoneTimer::process() {
   last_red_min = curr_min;
   //Serial.printf("process END\n");
 
-//    MQTTLogMessage("process END");
+  //    MQTTLogMessage("process END");
 
 }
 
@@ -668,7 +672,7 @@ void ITZoneTimer::addTask(String type, byte device_id, String function_name, Str
 //void ITZoneTimer::setRunTime(byte index, byte hour, byte min,THandlerFunction_Callback fn)
 {
 
-//MQTTLogMessage("ITZoneTimer::addTask START :fnp"+function_name+"/"+function_name_parameter);
+  //MQTTLogMessage("ITZoneTimer::addTask START :fnp"+function_name+"/"+function_name_parameter);
 
   //String hourstr=time.substring(0,2);
   //String minstr=time.substring(3,5);
@@ -704,8 +708,8 @@ void ITZoneTimer::addTask(String type, byte device_id, String function_name, Str
   cronObject.function_name = function_name;
   cronObject.function_name_parameter = function_name_parameter;
 
-//if (function_name.equals("Relay on at sunset")) cronObject.function_name_parameter="+1h";
-//if (function_name.equals("Relay off at sunrise")) cronObject.function_name_parameter="-1h";
+  //if (function_name.equals("Relay on at sunset")) cronObject.function_name_parameter="+1h";
+  //if (function_name.equals("Relay off at sunrise")) cronObject.function_name_parameter="-1h";
 
   cronObject.device_id = device_id;
 
@@ -728,7 +732,7 @@ void ITZoneTimer::addTask(String type, byte device_id, String function_name, Str
   //  else if (cronObject.function_name.equals("Update temperature")) cronObject.fn_Callback = timer_func_updateTemperature;
 
   cronObjects.add(cronObject);
-//MQTTLogMessage("ITZoneTimer::addTask END");
+  //MQTTLogMessage("ITZoneTimer::addTask END");
 
 }
 

@@ -319,6 +319,10 @@ int readFullFile(char * path, String & content) {
   return 0;
   }
 */
+
+
+/*
+
 bool saveFile(char *path, String indata) {
 
   MQTTLogMessage(String("saveFile [")+path+"] START");
@@ -354,6 +358,62 @@ bool saveFile(char *path, String indata) {
 
   f.println(indata.c_str());
 
+
+  //if (conf.serialLogging==true) Serial.printf("saved %s \n",indata.c_str());
+
+  f.close();
+
+  //    MQTTLogMessage(String("File saved : ")+path.c_str() );
+
+  //    MQTTLogMessage(String("saveFile END") );
+
+  MQTTLogMessage(String("saveFile END"));
+  return true;
+}
+*/
+
+
+
+bool saveFile(char *path, const char *indata) {
+
+  MQTTLogMessage(String("saveFile [")+path+"] START");
+//  MQTTLogMessage(String("saveFile : ") + indata);
+
+  //Serial.printf("--------------saveFile [%s]\n[%s]\n",path.c_str(), indata.c_str());
+
+  //Serial.printf("indata.length()=%d\n",indata.length() );
+  //Serial.printf("isValidJson(indata)=%d\n",isValidJson(indata) );
+
+  if (strlen(indata) < 800 || isValidJson(indata) == false) return false;
+
+  MQTTLogMessage("saveFile 2");
+
+
+  //if (conf.serialLogging==true)     Serial.printf("saveFile %s\n[%s]\n",path.c_str(), indata.c_str());
+
+  //String indatapart=indata.substring(0,300) ;
+
+  //    MQTTLogMessage(String("saveFile : ")+path+     String(", length : ")+indata.length()+   String(" , leading: ")+indata.substring(0,300));
+  //MQTTLogMessage(String("saveFile : ") + path + String(", length : ") + indata.length() + String(" , data: ") + indata);
+  //    addAppLogMessage(String("saveFile : ")+indata );
+
+
+  File f = SPIFFS.open(path, "w");
+
+  MQTTLogMessage("saveFile 3");
+
+  if (!f) {
+    //    Serial.printf("Save file error [%s]\n",path.c_str() );
+    MQTTLogMessage(String("Save file error : ") + path);
+
+    return false;
+  }
+
+
+
+  f.println(indata);
+
+  MQTTLogMessage("saveFile 4");
 
   //if (conf.serialLogging==true) Serial.printf("saved %s \n",indata.c_str());
 

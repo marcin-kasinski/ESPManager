@@ -647,7 +647,7 @@ FirmwareVersionStruct getFirmwareVersionFromNet() {
 
 
 
-    if (isValidJson(payload) == false) return ret;
+    if (isValidJson(payload.c_str()) == false) return ret;
 
     char inchars[payload.length() + 1];
     strcpy(inchars, payload.c_str());
@@ -982,8 +982,61 @@ void processAPReboot() {
   }
 */
 
-bool isValidJson(String in ) {
+bool isValidJson(const char *in ) {
+
+return true;
+    MQTTLogMessage("isValidJson");
+
+  //      Serial.println("isValidJson0");
+  //    Serial.println(in.length());
+  //    Serial.println(in.c_str());
+
+  char inchars[ strlen(in) + 1];
+  strcpy(inchars, in );
+  //      Serial.println("isValidJson1");
+    MQTTLogMessage("isValidJson 1");
+
+  DynamicJsonDocument doc( strlen(in) + 1);
+  //     Serial.println("isValidJson2");
+    MQTTLogMessage("isValidJson 2");
+  DeserializationError  error = deserializeJson(doc, inchars);
+  //      Serial.println("isValidJson3");
+    MQTTLogMessage("isValidJson 3");
+
+switch (error.code()) {
+    case DeserializationError::Ok:
+        MQTTLogMessage(F("isValidJson Deserialization succeeded"));
+        break;
+    case DeserializationError::InvalidInput:
+        MQTTLogMessage(F("isValidJson Invalid input!"));
+        break;
+    case DeserializationError::NoMemory:
+        MQTTLogMessage(F("isValidJson Not enough memory"));
+        break;
+    default:
+        Serial.print(F("isValidJson Deserialization failed"));
+        break;
+}
+
+
+    MQTTLogMessage("isValidJson 4");
+
+
+  if (error) {
+    MQTTLogMessage(String("Failed to parse string"));
+    MQTTLogMessage(String("Failed to parse string:")+  error.c_str()  );
+    return false;
+  }
+
+//  JsonObject json = doc.to < JsonObject > ();
+
+    MQTTLogMessage("isValidJson END");
+
+  return true;
+}
 /*
+bool isValidJson(const char *in ) {
+
 //    MQTTLogMessage("isValidJson");
 
   //      Serial.println("isValidJson0");
@@ -999,18 +1052,39 @@ bool isValidJson(String in ) {
   DeserializationError  error = deserializeJson(doc, inchars);
   //      Serial.println("isValidJson3");
 
+switch (error.code()) {
+    case DeserializationError::Ok:
+        MQTTLogMessage(F("isValidJson Deserialization succeeded"));
+        break;
+    case DeserializationError::InvalidInput:
+        MQTTLogMessage(F("isValidJson Invalid input!"));
+        break;
+    case DeserializationError::NoMemory:
+        MQTTLogMessage(F("isValidJson Not enough memory"));
+        break;
+    default:
+        Serial.print(F("isValidJson Deserialization failed"));
+        break;
+}
+
+
+
+
   if (error) {
     MQTTLogMessage(String("Failed to parse string"));
-    MQTTLogMessage(String("Failed to parse string:")+  ""  );
+    MQTTLogMessage(String("Failed to parse string:")+  error.c_str()  );
     return false;
   }
-  JsonObject json = doc.to < JsonObject > ();
+
+//  JsonObject json = doc.to < JsonObject > ();
 
 //    MQTTLogMessage("isValidJson END");
-*/
+
   return true;
 }
 
+
+ */
 /*
   JsonObject getJsonObjectFromString(String in)
   {
@@ -1032,7 +1106,7 @@ bool loadConfigFromString(String in ) {
   MQTTLogMessage(in);
   //  Serial.printf("loadConfigFromString... [%s]\n", in.c_str());
 
-  if (isValidJson( in ) == false) return false;
+  if (isValidJson( in.c_str() ) == false) return false;
 
   //  Serial.printf("loadConfigFromString 2\n");
 
@@ -1640,7 +1714,7 @@ bool saveConfig() {
   //MQTTLogMessage(String("saving")+str );
   //    MQTTLogMessage(String("saveConfig 4"));
 
-  bool savefileret = saveFile(CONF_FILE, str);
+  bool savefileret = saveFile(CONF_FILE, str.c_str());
 
 
   if (savefileret == false) return false;

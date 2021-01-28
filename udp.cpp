@@ -177,7 +177,7 @@ void processUDPMQTTCallback() {
   MQTTLogMessage("UDP received :" + buffer);
 
   // TU NIE RESTARTUJE SIE
-  if (isValidJson(buffer) == false) return;
+  if (isValidJson(buffer.c_str()) == false) return;
 
   // TU NIE RESTARTUJE SIE
 

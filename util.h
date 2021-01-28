@@ -89,7 +89,8 @@ extern String savedConf;
 extern bool confwassaved;
 
 
-bool isValidJson(String in);
+//bool isValidJson(String in);
+bool isValidJson(const char * in);
 void updateSunriseSunsetInfo(String sunset_update_time, String sunrise, String sunset);
 
 void addAppLogMessage(String message);
@@ -185,7 +186,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 16.51  ;
+float firmware_version = 16.53;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
