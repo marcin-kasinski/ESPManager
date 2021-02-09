@@ -134,11 +134,13 @@ void timer_func_getSunriseSunsetTime(CronObject cronObject) {
 
 void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift, String shift_value) {
 
+    //MQTTLogMessage("set_hour_and_time_with_shift START");
+
   if (shift_value.equals("")) return;
-  //  MQTTLogMessage("set_hour_and_time_with_shift START");
-  //  MQTTLogMessage(String ("shift_value =") + shift_value);
-  //  MQTTLogMessage(String ("IN hour_after_shift =") + hour_after_shift);
-  //  MQTTLogMessage(String ("IN min_after_shift =") + min_after_shift);
+
+    //MQTTLogMessage(String ("shift_value =") + shift_value);
+    //MQTTLogMessage(String ("IN hour_after_shift =") + hour_after_shift);
+    //MQTTLogMessage(String ("IN min_after_shift =") + min_after_shift);
 
   //minus, czy plus
   byte shift_mode = shift_value.charAt(0);
@@ -183,7 +185,7 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
 
   if (shift_mode == '-')
   {
-    //    MQTTLogMessage(String ("MINUS START"));
+    //MQTTLogMessage(String ("MINUS START"));
 
     if (shift_min > min_after_shift)
     {
@@ -199,12 +201,14 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
 
   else if (shift_mode == '+')
   {
-    //    MQTTLogMessage(String ("PLUS START"));
+    //MQTTLogMessage(String ("PLUS START"));
+    //MQTTLogMessage(String ("PLUS START shift_min ")+shift_min);
+    //MQTTLogMessage(String ("PLUS START min_after_shift ")+min_after_shift);
     hour_after_shift = hour_after_shift + shift_hour;
 
     if ((shift_min + min_after_shift) > 60)
     {
-      hour_after_shift = hour_after_shift + shift_hour;
+      hour_after_shift = hour_after_shift + shift_hour+1;
       min_after_shift = min_after_shift - (60 - shift_min) ;
 
     }
@@ -222,7 +226,11 @@ void set_hour_and_time_with_shift(byte &hour_after_shift, byte &min_after_shift,
   //  MQTTLogMessage(String ("shift_mode =") + shift_mode);
 
 
-  //  MQTTLogMessage("set_hour_and_time_with_shift END");
+    //MQTTLogMessage(String ("OUT hour_after_shift =") + hour_after_shift);
+    //MQTTLogMessage(String ("OUT min_after_shift =") + min_after_shift);
+
+
+    //MQTTLogMessage("set_hour_and_time_with_shift END");
 
 
   //min_after_shift=111;
@@ -233,7 +241,7 @@ void timer_func_relayOnAtSunset(CronObject cronObject) {
 
 
   if (runtime.sunset_hour == 0 && runtime.sunset_minute == 0) return;
-  //  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset START device_id =") + cronObject.device_id);
+    //MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset START device_id =") + cronObject.device_id);
 
   byte hour_after_shift = runtime.sunset_hour;
   byte min_after_shift = runtime.sunset_minute;
@@ -245,12 +253,12 @@ void timer_func_relayOnAtSunset(CronObject cronObject) {
     //conf.relays[device_id].relay_state=1;
     setRelayStatePermanently(cronObject.device_id, 1);
   }
-  //  MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset END device_id =") + cronObject.device_id);
+    //MQTTLogMessage(String ("TIMER timer_func_relayOnAtSunset END device_id =") + cronObject.device_id);
 }
 
 void timer_func_relayOffAtSunrise(CronObject cronObject) {
   if (runtime.sunset_hour == 0 && runtime.sunset_minute == 0) return;
-  //  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise START device_id =") + cronObject.device_id);
+    //MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise START device_id =") + cronObject.device_id);
 
   byte hour_after_shift = runtime.sunrise_hour;
   byte min_after_shift = runtime.sunrise_minute;
@@ -260,7 +268,7 @@ void timer_func_relayOffAtSunrise(CronObject cronObject) {
   if (hour_after_shift == runtime.curr_hour && min_after_shift == runtime.curr_min) {
     setRelayStatePermanently(cronObject.device_id, 0);
   }
-  //  MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise END device_id =") + cronObject.device_id);
+    //MQTTLogMessage(String ("TIMER timer_func_relayOffAtSunrise END device_id =") + cronObject.device_id);
 }
 
 /*

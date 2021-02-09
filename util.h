@@ -186,7 +186,7 @@ volatile bool interruptProcess=false;
 
 String hostName ; 
 String broadcast ; 
-float firmware_version = 16.53;
+float firmware_version = 16.54;
 float spiffs_version = 0; 
 String web_username;
 String web_password;
